@@ -1,4 +1,9 @@
+import RAPIER from 'https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.15.0/+esm'
 
+RAPIER.init().then(() => {
+    // Run the simulation.
+    _run_simulation(RAPIER);
+});
 
 //three
 const WIDTH = window.innerWidth;
@@ -106,6 +111,9 @@ function render() {
   cube.position.y -= 0.01;
   cube.rotation.z -= 0.01;
   requestAnimationFrame(render);
+//  world.step();
+
+  // Get and print the rigid-body's position.
   renderer.render(scene, camera);
 }
 render();
