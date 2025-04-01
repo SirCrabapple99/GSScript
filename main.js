@@ -41,8 +41,8 @@ function keyupinput(e) {
 var camdir = new THREE.Vector3;
 
 function cameramove(e) {
-   camera.rotation.x -= e.movementY / 1000;
-   camera.rotation.y -= e.movementX / 1000;
+   camera.rotateX(-1 * e.movementY / 1000);
+   camera.rotateY(-1 * e.movementX / 1000);
 }
 
 function mover() {
