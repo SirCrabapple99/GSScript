@@ -1,10 +1,3 @@
-import RAPIER from 'https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.15.0/+esm'
-
-RAPIER.init().then(() => {
-    // Run the simulation.
-    _run_simulation(RAPIER);
-});
-
 //three
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
@@ -108,10 +101,15 @@ let t = 0;
 function render() {
   mover();
   t += 0.01;
-  cube.position.y -= 0.01;
-  cube.rotation.z -= 0.01;
+  cube.rotation.x += 0.02;
+  cube.rotation.y += 0.02;
+  cube.rotation.z += 0.02;
+
+  cube.position.x -= Math.random()/300;
+  cube.position.y -= Math.random()/300;
+  cube.position.z -= Math.random()/300;
+
   requestAnimationFrame(render);
-//  world.step();
 
   // Get and print the rigid-body's position.
   renderer.render(scene, camera);
