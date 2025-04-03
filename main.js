@@ -1,3 +1,6 @@
+//ammo
+
+
 //three
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
@@ -30,7 +33,7 @@ scene.add(planee);
 planee.position.set(0, -20, 0);
 
 
-const light = new THREE.PointLight(0xffffff);
+const light = new THREE.PointLight(0xffffff, 1000);
 light.position.set(0, 15, 0);
 light.castShadow = true;
 scene.add(light);
@@ -104,10 +107,6 @@ function render() {
   cube.rotation.x += 0.02;
   cube.rotation.y += 0.02;
   cube.rotation.z += 0.02;
-
-  cube.position.x -= Math.random()/300;
-  cube.position.y -= Math.random()/300;
-  cube.position.z -= Math.random()/300;
 
   requestAnimationFrame(render);
 
