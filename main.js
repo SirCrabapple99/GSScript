@@ -1,3 +1,23 @@
+//js
+//settings
+let floorheight = -20;
+let speed = 5;
+
+//functions
+function intorad(x) {
+  return (x * (Math.PI/180));
+};
+//event listeners
+document.addEventListener("click", function(){
+  document.body.requestPointerLock();
+});
+document.addEventListener("mousemove", cameramove);
+
+document.addEventListener("keydown", keyinput);
+document.addEventListener("keyup", keyupinput);
+
+//movement
+let speed1;
 //cannon
 const world = new CANNON.World();
 world.gravity.set(0, -9.82, 0);
@@ -32,29 +52,29 @@ var groundMaterial = new CANNON.Material("groundMaterial");
  
 //cube
 const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
-const cubeBody = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: 1 | 4});
+const cubeBody = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: 1 | 2 | 4});
 cubeBody.addShape(cubeShape);
 cubeBody.position.set(0, 0, 0);
 world.addBody(cubeBody);
 //plane
 const planeShape = new CANNON.Box(new CANNON.Vec3(500, 0.5, 500));
-const planeBody = new CANNON.Body({mass: 0, material: groundMaterial, collisionFilterGroup: 1, collisionFilterMask: 1 | 2});
+const planeBody = new CANNON.Body({mass: 0, material: groundMaterial, collisionFilterGroup: 2, collisionFilterMask: 1 | 2 | 8});
 planeBody.addShape(planeShape);
-planeBody.position.set(0, -20, 0);
+planeBody.position.set(0, floorheight, 0);
 world.addBody(planeBody);
 //player
-const rollshape = new CANNON.Box(new CANNON.Vec3(3, 3, 3));
-const rollbody = new CANNON.Body({mass: 5, allowSleep: false, collisionFilterGroup: 2, collisionFilterMask: 1});
-rollbody.addShape(rollshape);
-rollbody.position.set(0, 5, 20);
-world.addBody(rollbody);
-
-const playershape = new CANNON.Box(new CANNON.Vec3(5, 12, 5));
-const playerbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, fixedRotation: true, collisionFilterGroup: 4, collisionFilterMask: 1});
+const playershape = new CANNON.Cylinder(6, 6, 12, 8);
+const playerbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, fixedRotation: true, collisionFilterGroup: 4, collisionFilterMask: 1 | 2});
 playerbody.addShape(playershape);
 playerbody.position.set(0, 25, 20);
 playerbody.linearDamping = 0.99;
 world.addBody(playerbody);
+
+const rolls = new CANNON.Sphere(1);
+const rollbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, collisionFilterGroup: 8, collisionFilterMask: 1 | 2});
+rollbody.addShape(rolls);
+rollbody.position.y = 10;
+world.addBody(rollbody);
 //three
 const clock = new THREE.Clock();
 let delta;
@@ -64,7 +84,7 @@ const HEIGHT = window.innerHeight;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(WIDTH, HEIGHT);
-renderer.setClearColor(0xdddddd, 1);
+renderer.setClearColor(0x000000, 1);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
@@ -106,18 +126,45 @@ scene.add(light);
 
 const amb = new THREE.AmbientLight(0x404040, 5);
 scene.add(amb);
+
+
+  //materials
+  const orangemat = new THREE.MeshStandardMaterial({color: 0xff4f00});
+  //ramp1
+  const ramp1a = new CANNON.Box(new CANNON.Vec3(25, 5, 25));
+  const ramp1a2 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFilterMask: 1 | 4 | 8});
+  ramp1a2.addShape(ramp1a);
+  ramp1a2.position.set(60, -19, 20);
+  ramp1a2.quaternion.set(0.15, 0, 0, 1);
+  ramp1a2.quaternion.normalize();
+  world.add(ramp1a2);
+
+  const ramp1b = new THREE.BoxGeometry(50, 10, 50);
+  const ramp1b2 = new THREE.Mesh(ramp1b, orangemat);
+  ramp1b2.position.set(ramp1a2.position.x, ramp1a2.position.y, ramp1a2.position.z, ramp1a2.position.w);
+  ramp1b2.quaternion.set(ramp1a2.quaternion.x, ramp1a2.quaternion.y, ramp1a2.quaternion.z, ramp1a2.quaternion.w);
+  ramp1b2.castShadow = true;
+  ramp1b2.recieveShadow = true;
+  scene.add(ramp1b2);
+
+function positionsetter() {
+  camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
+  cube.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
+  cube.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w);
+}
+
 //movement
-var keystatus = [0, "KeyW", 0, "KeyA", 0, "KeyS", 0, "KeyD", 0, "Space", 0, "KeyY", 0, "KeyE", 0, "KeyV"];
+var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift"];
 
 function keyinput(e) {
-  keystatus[keystatus.indexOf(e.code) - 1] = 1;
+  keystatus[keystatus.indexOf(e.key) - 1] = 1;
   if (e.code == "KeyV") {
     noclip *= -1;
-  }
+  };
 };
 
 function keyupinput(e) {
-  keystatus[keystatus.indexOf(e.code) - 1] = 0;
+  keystatus[keystatus.indexOf(e.key) - 1] = 0;
 };
 
 camera.rotation.order = "YXZ";
@@ -133,56 +180,59 @@ let noclip = -1;
 
 function mover() {
   camera.getWorldDirection(camdir);
-  camdir.x *= 1000;
-  camdir.y *= 1000;
-  camdir.z *= 1000;
-  playerbody.position.y = rollbody.position.y + 16;
+  camdir.x *= speed1;
+  camdir.y *= speed1;
+  camdir.z *= speed1;
   if (keystatus[0] == 1) {
     if (noclip == 1) {
-      playerbody.applyForce(camdir, new CANNON.Vec3(0, 0, 0));
-      rollerbody.position.y = playerbody.position.y - 16
+      playerbody.velocity.x += camdir.x;
+      playerbody.velocity.z += camdir.z;
+      playerbody.velocity.y += camdir.z;
     } else {
-      playerbody.applyForce(new CANNON.Vec3(camdir.x, 0, camdir.z), new CANNON.Vec3(0, 0, 0));
+      playerbody.velocity.x += camdir.x;
+      playerbody.velocity.z += camdir.z;
     }
-  };
+  }
   if (keystatus[2] == 1) {
-  camera.translateX(-1);
+      playerbody.velocity.x += camdir.z;
+      playerbody.velocity.z += camdir.x * -1;
   };
   if (keystatus[4] == 1) {
     if (noclip == 1) {
-      playerbody.applyForce(new CANNON.Vec3(camdir.x * -1, camdir.y * -1, camdir.z * -1), new CANNON.Vec3(0, 0, 0));
+        playerbody.velocity.x -= camdir.x;
+        playerbody.velocity.z -= camdir.z;
+        playerbody.velocity.y -= camdir.z;
       } else {
-        playerbody.applyForce(new CANNON.Vec3(camdir.x * -1, 0, camdir.z * -1), new CANNON.Vec3(0, 0, 0));
+        playerbody.velocity.x -= camdir.x;
+        playerbody.velocity.z -= camdir.z;
       }
-  };
+  }
   if (keystatus[6] == 1) {
-    camera.translateX(1);
+    playerbody.velocity.x += camdir.z * -1;
+    playerbody.velocity.z += camdir.x;
   };
   if (keystatus[8] == 1) {
-    camera.position.y += 1;
   };
   if (keystatus[10] == 1) {
     camera.position.y -= 1;
   };
+  if (keystatus[16] == 1) {
+    speed1 = speed * 1.65;
+  } else {
+    speed1 = speed;
+  }
+    rollbody.position.x = playerbody.position.x;
+    rollbody.position.z = playerbody.position.z;
+    playerbody.position.y = rollbody.position.y + 10;
 }
-document.addEventListener("click", function(){
-  document.body.requestPointerLock();
-});
-document.addEventListener("mousemove", cameramove);
-
-document.addEventListener("keypress", keyinput);
-document.addEventListener("keyup", keyupinput);
-//render
 
 let t = 0;
 function render() {
   delta = Math.min(clock.getDelta(), 0.1);
   world.step(delta);
   mover();
+  positionsetter();
   t += delta;
-  camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
-  cube.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
-  cube.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w);
   world.step(delta);
   requestAnimationFrame(render);
 
