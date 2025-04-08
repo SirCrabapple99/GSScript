@@ -1,10 +1,12 @@
 //js
+var etoggle = -1;
 //settings
-let floorheight = -20;
-let speed = 5;
-let jump = 0;
-//terminal falling velocity
-let terminal = 25;
+/*base plane height*/  let floorheight = -20;
+/*player speed*/  let speed = 5;
+/*jump height*/  let jump = 22;
+/*max object pickup distance*/  let pickuprange = 70;
+/*max velocity*/  let terminal = 22;
+/*lower is faster, crazy exponential scaling and you gotta turn up terminal*/ let restraint = 0.99;
 //functions
 function intorad(x) {
   return (x * (Math.PI/180));
@@ -51,32 +53,12 @@ var groundMaterial = new CANNON.Material("groundMaterial");
  
          // We must add the contact materials to the world
          world.addContactMaterial(slippery_ground_cm);
- 
-//cube
-const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
-const cubeBody = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1});
-cubeBody.addShape(cubeShape);
-cubeBody.position.set(0, 0, 0);
-world.addBody(cubeBody);
 //plane
 const planeShape = new CANNON.Box(new CANNON.Vec3(500, 0.5, 500));
 const planeBody = new CANNON.Body({mass: 0, material: groundMaterial, collisionFilterGroup: 2, collisionFilterMask: -1});
 planeBody.addShape(planeShape);
 planeBody.position.set(0, floorheight, 0);
 world.addBody(planeBody);
-//player
-const playershape = new CANNON.Cylinder(6, 6, 12, 8);
-const playerbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, fixedRotation: true, collisionFilterGroup: 4, collisionFilterMask: 1 | 2});
-playerbody.addShape(playershape);
-playerbody.position.set(0, 25, 20);
-playerbody.linearDamping = 0.99;
-world.addBody(playerbody);
-
-const rolls = new CANNON.Sphere(2);
-const rollbody = new CANNON.Body({mass: 10, material: groundMaterial, allowSleep: false, collisionFilterGroup: 8, collisionFilterMask: 1 | 2});
-rollbody.addShape(rolls);
-rollbody.position.y = 10;
-world.addBody(rollbody);
 //three
 const clock = new THREE.Clock();
 let delta;
@@ -129,12 +111,35 @@ scene.add(light);
 const amb = new THREE.AmbientLight(0x404040, 0);
 scene.add(amb);
 
+//player
+const playershape = new CANNON.Cylinder(6, 6, 10, 8);
+const playerbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, fixedRotation: true, collisionFilterGroup: 4, collisionFilterMask: 1 | 2});
+playerbody.addShape(playershape);
+playerbody.position.set(0, 25, 20);
+playerbody.linearDamping = restraint;
+world.addBody(playerbody);
+
+const rolls = new CANNON.Sphere(2);
+const rollbody = new CANNON.Body({mass: 10, material: groundMaterial, allowSleep: false, collisionFilterGroup: 8, collisionFilterMask: 1 | 2});
+rollbody.addShape(rolls);
+rollbody.position.y = 10;
+world.addBody(rollbody);
+
+//main objects
 
   //materials
   const orangemat = new THREE.MeshPhysicalMaterial({color: 0xff4f00});
   const purplemat = new THREE.MeshPhysicalMaterial({color: 0xa020f0});
   const orangematshiny = new THREE.MeshPhysicalMaterial({color: 0xff4f00, roughness: 0.25, metalness: 0.75});
   const purplematshiny = new THREE.MeshStandardMaterial({color: 0xa020f0, roughness: 0.25, metalness: 0.75});
+  /*guide on groups and masks
+    all groups have to be the next exponent of 2 (2^2, 2^3, etc.)
+    group 1 is for objects that can be picked up/general physics objects. Only able to be jumped on if touching an object in group 2
+    group 2 is for terrain objects, so things like ramps, the ground, etc. remember though if a player is touching group 2, they will always be able to jump on it
+    group 4 is for the player cylinder, the one that pushes around stuff
+    group 8 is for the player ball, and it was how I solved going up hills and fall speed
+    group 16 is for rays, may change later
+  */
   //ramp 1
   const ramp1a = new CANNON.Box(new CANNON.Vec3(25, 5, 25));
   const ramp1a2 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFilterMask: 1 | 4 | 8});
@@ -155,6 +160,7 @@ scene.add(amb);
   //sphere 1
   const sphere1a = new CANNON.Sphere(5);
   const sphere1a2 = new CANNON.Body({mass: 15, collisionFilterGroup: 1, collisionFilterMask: -1});
+  sphere1a2.nameg = "Test Sphere"
   sphere1a2.addShape(sphere1a);
   sphere1a2.position.set(20, 0, 20);
   world.addBody(sphere1a2);
@@ -162,22 +168,25 @@ scene.add(amb);
   const sphere1b = new THREE.SphereGeometry(5, 36, 16);
   const sphere1b2 = new THREE.Mesh(sphere1b, purplematshiny);
   scene.add(sphere1b2);
+  //cube 1
+  const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
+  const cubeBody = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1});
+  cubeBody.nameg = "Test Cube";
+  cubeBody.addShape(cubeShape);
+  cubeBody.position.set(0, 0, 0);
+  world.addBody(cubeBody);
 
-function positionsetter() {
-  sphere1b2.position.set(sphere1a2.position.x, sphere1a2.position.y, sphere1a2.position.z);
-  sphere1b2.quaternion.set(sphere1a2.quaternion.x, sphere1a2.quaternion.y, sphere1a2.quaternion.z, sphere1a2.quaternion.w);
-  camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
-  cube.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
-  cube.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w);
-}
-
-//movement
+//movement and interactions
+//key presses
 var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift"];
 
 function keyinput(e) {
   keystatus[keystatus.indexOf(e.key) - 1] = 1;
   if (e.code == "KeyV") {
     noclip *= -1;
+  };
+  if (e.code == "KeyE") {
+    etoggle *= -1;
   };
 };
 
@@ -195,9 +204,7 @@ function cameramove(e) {
 const camdir = new THREE.Vector3;
 
 let noclip = -1;
-
-var rayy = new CANNON.Ray();
-
+//the check for jump height
 function bodiesAreInContact(obj, group, y){
   for(var i=0; i<world.contacts.length; i++){
       var c = world.contacts[i];
@@ -211,7 +218,34 @@ function bodiesAreInContact(obj, group, y){
   }
   return false;
 }
-
+//picking up stuff
+//check for max object hold distance
+function gdistance(p) {
+  if (Math.abs(playerbody.position.x) - Math.abs(p.position.x) <= pickuprange && Math.abs(playerbody.position.y) - Math.abs(p.position.y) <= pickuprange && Math.abs(playerbody.position.z) - Math.abs(p.position.z) <= pickuprange) {
+    return true
+  } else {
+    return false
+  }
+}
+//use raycasting to check for what object the cam is looking at
+var pobj = new CANNON.RaycastResult
+function pickup(x) {
+  if (x == 1) {
+    if (pobj.body != null && gdistance(pobj.body) == true) {
+    pobj.body.collisionFilterGroup = 8;
+    pobj.body.velocity.x = (playerbody.position.x - pobj.body.position.x + 5 * camdir.x);
+    pobj.body.velocity.y = (playerbody.position.y - pobj.body.position.y + 5 * camdir.y);
+    pobj.body.velocity.z = (playerbody.position.z - pobj.body.position.z + 5 * camdir.z);
+    } else {
+      etoggle *= -1;
+      world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 1, collisionFilterGroup: 16}, pobj);
+    }
+  } else if (pobj.body != null) {
+    pobj.body.collisionFilterGroup = 1;
+    world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 1, collisionFilterGroup: 16}, pobj);
+  }
+}
+//actual movement controls
 function mover() {
   camera.getWorldDirection(camdir);
   camdir.x *= speed1;
@@ -221,7 +255,7 @@ function mover() {
     if (noclip == 1) {
       playerbody.velocity.x += camdir.x;
       playerbody.velocity.z += camdir.z;
-      playerbody.velocity.y += camdir.z;
+      rollbody.velocity.y += camdir.z;
     } else {
       playerbody.velocity.x += camdir.x;
       playerbody.velocity.z += camdir.z;
@@ -235,7 +269,7 @@ function mover() {
     if (noclip == 1) {
         playerbody.velocity.x -= camdir.x;
         playerbody.velocity.z -= camdir.z;
-        playerbody.velocity.y -= camdir.z;
+        rollbody.velocity.y -= camdir.z;
       } else {
         playerbody.velocity.x -= camdir.x;
         playerbody.velocity.z -= camdir.z;
@@ -247,23 +281,49 @@ function mover() {
   };
   if (keystatus[8] == 1) {
     if (bodiesAreInContact(rollbody, 2) === true) {
-      rollbody.velocity.y += 30;
+      rollbody.velocity.y += jump;
     }
   };
   if (keystatus[10] == 1) {
     camera.position.y -= 1;
   };
   if (keystatus[16] == 1) {
-    speed1 = speed * 1.65;
+    //speed1 = speed * 1.4;
   } else {
     speed1 = speed;
   }
-  if (bodiesAreInContact(rollbody, 2) === false)  {
+  //max velocity enforcer and better slowing
+  if (bodiesAreInContact(rollbody, 2) === false) {
+    if (rollbody.velocity.y >= 0) {
+      rollbody.velocity.y = Math.min(terminal, rollbody.velocity.y - 0.5);
+    } else {
     rollbody.velocity.y = Math.max(terminal * -1, rollbody.velocity.y - 0.5);
+    }
   }
+  if (playerbody.velocity.x >= 0) {
+    rollbody.velocity.x = Math.min(terminal, rollbody.velocity.x - 0.5);
+  } else {
+    rollbody.velocity.x = Math.max(terminal * -1, rollbody.velocity.x + 0.5);
+  }
+
+  if (playerbody.velocity.z >= 0) {
+    rollbody.velocity.z = Math.min(terminal, rollbody.velocity.z - 0.5);
+  } else {
+    rollbody.velocity.z = Math.max(terminal * -1, rollbody.velocity.z + 0.5);
+  }
+    pickup(etoggle);
     rollbody.position.x = playerbody.position.x;
     rollbody.position.z = playerbody.position.z;
     playerbody.position.y = rollbody.position.y + 10;
+}
+
+//render
+function positionsetter() {
+  sphere1b2.position.set(sphere1a2.position.x, sphere1a2.position.y, sphere1a2.position.z);
+  sphere1b2.quaternion.set(sphere1a2.quaternion.x, sphere1a2.quaternion.y, sphere1a2.quaternion.z, sphere1a2.quaternion.w);
+  camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
+  cube.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
+  cube.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w);
 }
 
 let t = 0;
