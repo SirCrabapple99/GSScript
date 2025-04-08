@@ -2,7 +2,9 @@
 //settings
 let floorheight = -20;
 let speed = 5;
-
+let jump = 0;
+//terminal falling velocity
+let terminal = 25;
 //functions
 function intorad(x) {
   return (x * (Math.PI/180));
@@ -52,13 +54,13 @@ var groundMaterial = new CANNON.Material("groundMaterial");
  
 //cube
 const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
-const cubeBody = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: 1 | 2 | 4});
+const cubeBody = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1});
 cubeBody.addShape(cubeShape);
 cubeBody.position.set(0, 0, 0);
 world.addBody(cubeBody);
 //plane
 const planeShape = new CANNON.Box(new CANNON.Vec3(500, 0.5, 500));
-const planeBody = new CANNON.Body({mass: 0, material: groundMaterial, collisionFilterGroup: 2, collisionFilterMask: 1 | 2 | 8});
+const planeBody = new CANNON.Body({mass: 0, material: groundMaterial, collisionFilterGroup: 2, collisionFilterMask: -1});
 planeBody.addShape(planeShape);
 planeBody.position.set(0, floorheight, 0);
 world.addBody(planeBody);
@@ -70,8 +72,8 @@ playerbody.position.set(0, 25, 20);
 playerbody.linearDamping = 0.99;
 world.addBody(playerbody);
 
-const rolls = new CANNON.Sphere(1);
-const rollbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, collisionFilterGroup: 8, collisionFilterMask: 1 | 2});
+const rolls = new CANNON.Sphere(2);
+const rollbody = new CANNON.Body({mass: 10, material: groundMaterial, allowSleep: false, collisionFilterGroup: 8, collisionFilterMask: 1 | 2});
 rollbody.addShape(rolls);
 rollbody.position.y = 10;
 world.addBody(rollbody);
@@ -152,7 +154,7 @@ scene.add(amb);
 
   //sphere 1
   const sphere1a = new CANNON.Sphere(5);
-  const sphere1a2 = new CANNON.Body({mass: 15, collisionFilterGroup: 1, collisionFilterMask: 1 | 2 | 4});
+  const sphere1a2 = new CANNON.Body({mass: 15, collisionFilterGroup: 1, collisionFilterMask: -1});
   sphere1a2.addShape(sphere1a);
   sphere1a2.position.set(20, 0, 20);
   world.addBody(sphere1a2);
@@ -194,6 +196,22 @@ const camdir = new THREE.Vector3;
 
 let noclip = -1;
 
+var rayy = new CANNON.Ray();
+
+function bodiesAreInContact(obj, group, y){
+  for(var i=0; i<world.contacts.length; i++){
+      var c = world.contacts[i];
+      if(c.bi === obj && c.bj.collisionFilterGroup === group){
+          return true;
+      } else if (c.bi === obj && c.bj.collisionFilterGroup === 1 && y != 1) {
+        if (bodiesAreInContact(c.bj, 2, 1) === true) {
+          return true;
+        }
+      }
+  }
+  return false;
+}
+
 function mover() {
   camera.getWorldDirection(camdir);
   camdir.x *= speed1;
@@ -228,6 +246,9 @@ function mover() {
     playerbody.velocity.z += camdir.x;
   };
   if (keystatus[8] == 1) {
+    if (bodiesAreInContact(rollbody, 2) === true) {
+      rollbody.velocity.y += 30;
+    }
   };
   if (keystatus[10] == 1) {
     camera.position.y -= 1;
@@ -236,6 +257,9 @@ function mover() {
     speed1 = speed * 1.65;
   } else {
     speed1 = speed;
+  }
+  if (bodiesAreInContact(rollbody, 2) === false)  {
+    rollbody.velocity.y = Math.max(terminal * -1, rollbody.velocity.y - 0.5);
   }
     rollbody.position.x = playerbody.position.x;
     rollbody.position.z = playerbody.position.z;
