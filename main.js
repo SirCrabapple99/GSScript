@@ -4,7 +4,7 @@ var etoggle = -1;
 /*base plane height*/  let floorheight = -20;
 /*player speed*/  let speed = 5;
 /*jump height*/  let jump = 22;
-/*max object pickup distance*/  let pickuprange = 70;
+/*max object pickup distance*/  let pickuprange = 30;
 /*max velocity*/  let terminal = 22;
 /*lower is faster, crazy exponential scaling and you gotta turn up terminal*/ let restraint = 0.99;
 //functions
@@ -229,21 +229,18 @@ function gdistance(p) {
 }
 //use raycasting to check for what object the cam is looking at
 var pobj = new CANNON.RaycastResult
-function pickup(x) {
-  if (x == 1) {
+function pickup() {
+  if (etoggle == 1) {
     if (pobj.body != null && gdistance(pobj.body) == true) {
-    pobj.body.collisionFilterGroup = 8;
     pobj.body.velocity.x = (playerbody.position.x - pobj.body.position.x + 5 * camdir.x);
     pobj.body.velocity.y = (playerbody.position.y - pobj.body.position.y + 5 * camdir.y);
     pobj.body.velocity.z = (playerbody.position.z - pobj.body.position.z + 5 * camdir.z);
     } else {
-      etoggle *= -1;
-      world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 1, collisionFilterGroup: 16}, pobj);
+      etoggle = -1
     }
-  } else if (pobj.body != null) {
-    pobj.body.collisionFilterGroup = 1;
+  } else {
     world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 1, collisionFilterGroup: 16}, pobj);
-  }
+  };
 }
 //actual movement controls
 function mover() {
