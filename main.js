@@ -119,14 +119,14 @@ scene.add(amb);
 const playershape = new CANNON.Cylinder(6, 6, 10, 24);
 const playerbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, fixedRotation: true, collisionFilterGroup: 4, collisionFilterMask: 1 | 2});
 playerbody.addShape(playershape);
-playerbody.position.set(0, 25, 20);
+playerbody.position.set(0, 10, 30);
 playerbody.linearDamping = restraint;
 world.addBody(playerbody);
 
 const rolls = new CANNON.Sphere(2);
 const rollbody = new CANNON.Body({mass: 10, material: groundMaterial, allowSleep: false, collisionFilterGroup: 8, collisionFilterMask: 1 | 2});
 rollbody.addShape(rolls);
-rollbody.position.y = 10;
+rollbody.position.set(0, 10, 30);
 rollbody.angularDamping = restraint;
 world.addBody(rollbody);
 
@@ -139,6 +139,9 @@ world.addBody(rollbody);
   function returnobj(x) {
     return('data:@file/octet-stream;base64,' + btoa(x));
   };
+  //names of all the models so they can have their postion updated
+  let objlist = []
+  let objlistc = []
   //materials
   const orangemat = new THREE.MeshPhysicalMaterial({color: 0xff4f00});
   const purplemat = new THREE.MeshPhysicalMaterial({color: 0xa020f0});
@@ -205,22 +208,32 @@ world.addBody(rollbody);
   enemy1b2.recieveShadow = true;
   enemy1a2.tr = enemy1b2;
   scene.add(enemy1b2);
-  //test
-  // load a resource
-  loader.load((returnobj(monkey_obj)),function(monkey){scene.add(monkey);
+  //test model
+  const monkeya = new CANNON.Sphere(2.5);
+  const monkeyb = new CANNON.Body({mass: 2.5, collisionFilterGroup: 1, collisionFilterMask: -1});
+  monkeyb.addShape(monkeya);
+  monkeyb.position.set(0, 20, 0);
+  objlistc[0] = monkeyb
+  world.addBody(monkeyb);
+  loader.load(returnobj(monkey_obj),function(monkey){
+    scene.add(monkey);
     monkey.scale.set(5, 5, 5);
-    },
-  );
+    monkey.castShadow = true;
+    monkey.recieveShadow = true;
+    monkey.name = 'monkey'
+    objlist[0] = monkey
+  });
 
 //copy positions from cannon to three
+function poscopy(a, b) {
+  a.position.copy(b.position);
+  a.quaternion.copy(b.quaternion);
+}
 function positionsetter() {
-  enemy1b2.position.set(enemy1a2.position.x, enemy1a2.position.y, enemy1a2.position.z);
-  enemy1b2.quaternion.set(enemy1a2.quaternion.x, enemy1a2.quaternion.y, enemy1a2.quaternion.z, enemy1a2.quaternion.w);
-  sphere1b2.position.set(sphere1a2.position.x, sphere1a2.position.y, sphere1a2.position.z);
-  sphere1b2.quaternion.set(sphere1a2.quaternion.x, sphere1a2.quaternion.y, sphere1a2.quaternion.z, sphere1a2.quaternion.w);
+  poscopy(enemy1b2, enemy1a2);
+  poscopy(sphere1b2, sphere1a2);
   camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
-  cube.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
-  cube.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w);
+  poscopy(cube, cubeBody);
 }
 
 //movement and interactions
@@ -297,8 +310,8 @@ function mover() {
   camdir.z *= speed1;
   if (keystatus[0] == 1) {
     if (noclip == 1) {
-      playerbody.velocity.x += camdir.x;
-      playerbody.velocity.z += camdir.z;
+      rollbody.velocity.x += camdir.x;
+      rollbody.velocity.z += camdir.z;
       rollbody.velocity.y += camdir.z;
     } else {
       rollbody.velocity.x += camdir.x;
@@ -373,6 +386,11 @@ world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camer
 //render
 let t = 0;
 function render() {
+  for (var i = 0; i < objlist.length; i++) {
+    if (objlist[i]) {
+      poscopy(objlist[i], objlistc[i]);
+    }
+  }
   delta = Math.min(clock.getDelta(), 0.1);
   world.step(delta);
   mover();
