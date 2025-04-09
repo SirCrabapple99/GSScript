@@ -4,8 +4,9 @@ var etoggle = -1;
 /*base plane height*/  let floorheight = -20;
 /*player speed*/  let speed = 5;
 /*jump height*/  let jump = 22;
-/*max object pickup distance*/  let pickuprange = 30;
+/*max object pickup distance*/  let pickuprange = 60;
 /*max velocity*/  let terminal = 22;
+/*player strength (object move speed)*/ let strength = 3;
 /*lower is faster, crazy exponential scaling and you gotta turn up terminal*/ let restraint = 0.99;
 //functions
 function intorad(x) {
@@ -123,10 +124,10 @@ const rolls = new CANNON.Sphere(2);
 const rollbody = new CANNON.Body({mass: 10, material: groundMaterial, allowSleep: false, collisionFilterGroup: 8, collisionFilterMask: 1 | 2});
 rollbody.addShape(rolls);
 rollbody.position.y = 10;
+rollbody.angularDamping = restraint;
 world.addBody(rollbody);
 
 //main objects
-
   //materials
   const orangemat = new THREE.MeshPhysicalMaterial({color: 0xff4f00});
   const purplemat = new THREE.MeshPhysicalMaterial({color: 0xa020f0});
@@ -232,9 +233,9 @@ var pobj = new CANNON.RaycastResult
 function pickup() {
   if (etoggle == 1) {
     if (pobj.body != null && gdistance(pobj.body) == true) {
-    pobj.body.velocity.x = (playerbody.position.x - pobj.body.position.x + 5 * camdir.x);
-    pobj.body.velocity.y = (playerbody.position.y - pobj.body.position.y + 5 * camdir.y);
-    pobj.body.velocity.z = (playerbody.position.z - pobj.body.position.z + 5 * camdir.z);
+    pobj.body.velocity.x = (playerbody.position.x - pobj.body.position.x + 5 * camdir.x) * strength;
+    pobj.body.velocity.y = (playerbody.position.y - pobj.body.position.y + 5 * camdir.y) * strength;
+    pobj.body.velocity.z = (playerbody.position.z - pobj.body.position.z + 5 * camdir.z) * strength;
     } else {
       etoggle = -1
     }
@@ -254,13 +255,13 @@ function mover() {
       playerbody.velocity.z += camdir.z;
       rollbody.velocity.y += camdir.z;
     } else {
-      playerbody.velocity.x += camdir.x;
-      playerbody.velocity.z += camdir.z;
+      rollbody.velocity.x += camdir.x;
+      rollbody.velocity.z += camdir.z;
     }
   }
   if (keystatus[2] == 1) {
-      playerbody.velocity.x += camdir.z;
-      playerbody.velocity.z += camdir.x * -1;
+      rollbody.velocity.x += camdir.z;
+      rollbody.velocity.z += camdir.x * -1;
   };
   if (keystatus[4] == 1) {
     if (noclip == 1) {
@@ -268,13 +269,13 @@ function mover() {
         playerbody.velocity.z -= camdir.z;
         rollbody.velocity.y -= camdir.z;
       } else {
-        playerbody.velocity.x -= camdir.x;
-        playerbody.velocity.z -= camdir.z;
+        rollbody.velocity.x -= camdir.x;
+        rollbody.velocity.z -= camdir.z;
       }
   }
   if (keystatus[6] == 1) {
-    playerbody.velocity.x += camdir.z * -1;
-    playerbody.velocity.z += camdir.x;
+    rollbody.velocity.x += camdir.z * -1;
+    rollbody.velocity.z += camdir.x;
   };
   if (keystatus[8] == 1) {
     if (bodiesAreInContact(rollbody, 2) === true) {
@@ -297,20 +298,20 @@ function mover() {
     rollbody.velocity.y = Math.max(terminal * -1, rollbody.velocity.y - 0.5);
     }
   }
-  if (playerbody.velocity.x >= 0) {
+  if (rollbody.velocity.x >= 0) {
     rollbody.velocity.x = Math.min(terminal, rollbody.velocity.x - 0.5);
   } else {
     rollbody.velocity.x = Math.max(terminal * -1, rollbody.velocity.x + 0.5);
   }
 
-  if (playerbody.velocity.z >= 0) {
+  if (rollbody.velocity.z >= 0) {
     rollbody.velocity.z = Math.min(terminal, rollbody.velocity.z - 0.5);
   } else {
     rollbody.velocity.z = Math.max(terminal * -1, rollbody.velocity.z + 0.5);
   }
     pickup(etoggle);
-    rollbody.position.x = playerbody.position.x;
-    rollbody.position.z = playerbody.position.z;
+    playerbody.position.x = rollbody.position.x;
+    playerbody.position.z = rollbody.position.z;
     playerbody.position.y = rollbody.position.y + 10;
 }
 
