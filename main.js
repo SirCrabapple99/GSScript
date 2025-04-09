@@ -109,7 +109,7 @@ light.position.set(0, 15, 0);
 light.castShadow = true;
 scene.add(light);
 
-const amb = new THREE.AmbientLight(0x404040, 0);
+const amb = new THREE.AmbientLight(0x404040, 1);
 scene.add(amb);
 
 //player
@@ -168,6 +168,8 @@ world.addBody(rollbody);
 
   const sphere1b = new THREE.SphereGeometry(5, 36, 16);
   const sphere1b2 = new THREE.Mesh(sphere1b, purplematshiny);
+  sphere1b2.castShadow = true;
+  sphere1b2.recieveShadow = true;
   scene.add(sphere1b2);
   //cube 1
   const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
