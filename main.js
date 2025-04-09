@@ -281,7 +281,7 @@ function bodiesAreInContact(obj, group, y){
 //picking up stuff
 //check for max object hold distance
 function gdistance(p) {
-  if (Math.abs(playerbody.position.x) - Math.abs(p.position.x) <= pickuprange && Math.abs(playerbody.position.y) - Math.abs(p.position.y) <= pickuprange && Math.abs(playerbody.position.z) - Math.abs(p.position.z) <= pickuprange) {
+  if (Math.abs(playerbody.position.x) - Math.abs(p.position.x) <= pickuprange && Math.abs(playerbody.position.y) - Math.abs(p.position.y) <= pickuprange && Math.abs(playerbody.position.z) - Math.abs(p.position.z) <= pickuprange && Math.abs(playerbody.position.x) - Math.abs(p.position.x)>= pickuprange * -1 && Math.abs(playerbody.position.y) - Math.abs(p.position.y) >= pickuprange * -1 && Math.abs(playerbody.position.z) - Math.abs(p.position.z) >= pickuprange * -1) {
     return true
   } else {
     return false
