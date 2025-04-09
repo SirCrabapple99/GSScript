@@ -142,6 +142,7 @@ world.addBody(rollbody);
   //names of all the models so they can have their postion updated
   let objlist = []
   let objlistc = []
+  let modelloaded = [];
   //materials
   const orangemat = new THREE.MeshPhysicalMaterial({color: 0xff4f00});
   const purplemat = new THREE.MeshPhysicalMaterial({color: 0xa020f0});
@@ -208,21 +209,32 @@ world.addBody(rollbody);
   enemy1b2.recieveShadow = true;
   enemy1a2.tr = enemy1b2;
   scene.add(enemy1b2);
-  //test model
-  const monkeya = new CANNON.Sphere(2.5);
-  const monkeyb = new CANNON.Body({mass: 2.5, collisionFilterGroup: 1, collisionFilterMask: -1});
-  monkeyb.addShape(monkeya);
-  monkeyb.position.set(0, 20, 0);
-  objlistc[0] = monkeyb
-  world.addBody(monkeyb);
-  loader.load(returnobj(monkey_obj),function(monkey){
-    scene.add(monkey);
-    monkey.scale.set(5, 5, 5);
-    monkey.castShadow = true;
-    monkey.recieveShadow = true;
-    monkey.name = 'monkey'
-    objlist[0] = monkey
+  /*create an object. params:
+  object is the model name (the variable defined in the model) set to 0 for a normal shape
+  shape is the shape of the cannon object, might change later to allow multiple, probably not
+  parameters1 is the cannon.js body params, ex: {mass: 10, collisionFilterGroup: 1, etc}
+  amount is the amount of objects
+  (not added) positons is an array of vec3s that sets positions of each object, ex: [[1, 10, 30], [25, 15, 60], [-20, 40, -70]]
+  (optional)(not added)parameters2 is an array of the parameters of each three object. to copy another objects params, set to [-1, (index of params to be copied)]
+  parameters2 example: [[[parameter, value], [paremeter, value]], [[-1, 0]]]] (parameters2 array brackets, then another set of brackets for each object, then another for the parameter and it's value)
+  */
+  function addObject(object, shape, parameters1, amount, positions, parameters2) {
+  for (let i = 0; i < amount; i++) {
+  let itema = shape
+  let itemb = new CANNON.Body(parameters1);
+  itemb.addShape(itema);
+  itemb.position.set(0, Math.random() * 100, 0);
+  objlistc[i] = itemb;
+  world.addBody(itemb);
+  if (object != 0) {
+  loader.load(returnobj(object),function(item){
+    scene.add(item);
+    objlist[i] = item;
   });
+  }
+}
+}
+addObject(monkey_obj, new CANNON.Sphere(2.5), {mass: 2.5, collisionFilterGroup: 1, collisionFilterMask: -1}, 3, 0);
 
 //copy positions from cannon to three
 function poscopy(a, b) {
@@ -234,6 +246,12 @@ function positionsetter() {
   poscopy(sphere1b2, sphere1a2);
   camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
   poscopy(cube, cubeBody);
+  //models
+  for (var i = 0; i < objlist.length; i++) {
+    if (modelloaded[i] == 1) {
+      poscopy(objlist[i], objlistc[i]);
+    }
+  }
 }
 
 //movement and interactions
@@ -387,10 +405,12 @@ world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camer
 let t = 0;
 function render() {
   for (var i = 0; i < objlist.length; i++) {
-    if (objlist[i]) {
-      poscopy(objlist[i], objlistc[i]);
+    if (scene.getObjectById(objlist[i].id)) {
+      modelloaded[i] = 1;
+    } else {
+      modelloaded[i] = 0;
     }
-  }
+  };
   delta = Math.min(clock.getDelta(), 0.1);
   world.step(delta);
   mover();
