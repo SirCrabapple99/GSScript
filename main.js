@@ -16,6 +16,9 @@ function intorad(x) {
 document.addEventListener("click", function(){
   document.body.requestPointerLock();
 });
+
+document.addEventListener("click", shoot);
+
 document.addEventListener("mousemove", cameramove);
 
 document.addEventListener("keydown", keyinput);
@@ -72,7 +75,7 @@ renderer.setSize(WIDTH, HEIGHT);
 renderer.setClearColor(0x000000, 1);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
+document.getElementById("renderdiv").appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 //cam
@@ -113,7 +116,7 @@ const amb = new THREE.AmbientLight(0x404040, 1);
 scene.add(amb);
 
 //player
-const playershape = new CANNON.Cylinder(6, 6, 10, 8);
+const playershape = new CANNON.Cylinder(6, 6, 10, 24);
 const playerbody = new CANNON.Body({mass: 5, material: groundMaterial, allowSleep: false, fixedRotation: true, collisionFilterGroup: 4, collisionFilterMask: 1 | 2});
 playerbody.addShape(playershape);
 playerbody.position.set(0, 25, 20);
@@ -131,15 +134,17 @@ world.addBody(rollbody);
   //materials
   const orangemat = new THREE.MeshPhysicalMaterial({color: 0xff4f00});
   const purplemat = new THREE.MeshPhysicalMaterial({color: 0xa020f0});
+  const redmat = new THREE.MeshPhysicalMaterial({color: 0xaff0000});
   const orangematshiny = new THREE.MeshPhysicalMaterial({color: 0xff4f00, roughness: 0.25, metalness: 0.75});
-  const purplematshiny = new THREE.MeshStandardMaterial({color: 0xa020f0, roughness: 0.25, metalness: 0.75});
+  const purplematshiny = new THREE.MeshPhysicalMaterial({color: 0xa020f0, roughness: 0.25, metalness: 0.75});
+  const redmatshiny = new THREE.MeshPhysicalMaterial({color: 0xff0000, roughness: 0.25, metalness: 0.75});
   /*guide on groups and masks
     all groups have to be the next exponent of 2 (2^2, 2^3, etc.)
     group 1 is for objects that can be picked up/general physics objects. Only able to be jumped on if touching an object in group 2
     group 2 is for terrain objects, so things like ramps, the ground, etc. remember though if a player is touching group 2, they will always be able to jump on it
     group 4 is for the player cylinder, the one that pushes around stuff
     group 8 is for the player ball, and it was how I solved going up hills and fall speed
-    group 16 is for rays, may change later
+    group 16 is for enemys
   */
   //ramp 1
   const ramp1a = new CANNON.Box(new CANNON.Vec3(25, 5, 25));
@@ -178,6 +183,31 @@ world.addBody(rollbody);
   cubeBody.addShape(cubeShape);
   cubeBody.position.set(0, 0, 0);
   world.addBody(cubeBody);
+  //enemy test
+  const enemy1a = new CANNON.Cylinder(6, 6, 10, 24);
+  const enemy1a2 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1});
+  enemy1a2.addShape(enemy1a);
+  enemy1a2.position.set(-20, 0, 0);
+  enemy1a2.hp = 100;
+  world.addBody(enemy1a2);
+
+  const enemy1b = new THREE.CylinderGeometry(6, 6, 10, 24, 8);
+  const enemy1b2 = new THREE.Mesh(enemy1b, redmat);
+  enemy1b2.castShadow = true;
+  enemy1b2.recieveShadow = true;
+  enemy1a2.tr = enemy1b2;
+  scene.add(enemy1b2);
+
+//copy positions from cannon to three
+function positionsetter() {
+  enemy1b2.position.set(enemy1a2.position.x, enemy1a2.position.y, enemy1a2.position.z);
+  enemy1b2.quaternion.set(enemy1a2.quaternion.x, enemy1a2.quaternion.y, enemy1a2.quaternion.z, enemy1a2.quaternion.w);
+  sphere1b2.position.set(sphere1a2.position.x, sphere1a2.position.y, sphere1a2.position.z);
+  sphere1b2.quaternion.set(sphere1a2.quaternion.x, sphere1a2.quaternion.y, sphere1a2.quaternion.z, sphere1a2.quaternion.w);
+  camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
+  cube.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
+  cube.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w);
+}
 
 //movement and interactions
 //key presses
@@ -242,7 +272,7 @@ function pickup() {
       etoggle = -1
     }
   } else {
-    world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 1, collisionFilterGroup: 16}, pobj);
+    world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 1, collisionFilterGroup: 32}, pobj);
   };
 }
 //actual movement controls
@@ -316,16 +346,17 @@ function mover() {
     playerbody.position.z = rollbody.position.z;
     playerbody.position.y = rollbody.position.y + 10;
 }
-
-//render
-function positionsetter() {
-  sphere1b2.position.set(sphere1a2.position.x, sphere1a2.position.y, sphere1a2.position.z);
-  sphere1b2.quaternion.set(sphere1a2.quaternion.x, sphere1a2.quaternion.y, sphere1a2.quaternion.z, sphere1a2.quaternion.w);
-  camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
-  cube.position.set(cubeBody.position.x, cubeBody.position.y, cubeBody.position.z);
-  cube.quaternion.set(cubeBody.quaternion.x, cubeBody.quaternion.y, cubeBody.quaternion.z, cubeBody.quaternion.w);
+//shooting
+function shoot() {
+var sobj = new CANNON.RaycastResult();
+world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 16, collisionFilterGroup: 32}, sobj);
+  sobj.body.hp -= 20;
+  if (sobj.body.hp <= 0) {
+    world.removeBody(sobj.body);
+    scene.remove(sobj.body.tr);
+  }
 }
-
+//render
 let t = 0;
 function render() {
   delta = Math.min(clock.getDelta(), 0.1);
