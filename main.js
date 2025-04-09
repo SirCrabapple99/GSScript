@@ -7,7 +7,7 @@ var etoggle = -1;
 /*max object pickup distance*/  let pickuprange = 60;
 /*max velocity*/  let terminal = 22;
 /*player strength (object move speed)*/ let strength = 3;
-/*lower is faster, crazy exponential scaling and you gotta turn up terminal*/ let restraint = 0.999;
+/*lower is faster, crazy exponential scaling and you gotta turn up terminal*/ let restraint = 0.99;
 //functions
 function intorad(x) {
   return (x * (Math.PI/180));
@@ -131,6 +131,14 @@ rollbody.angularDamping = restraint;
 world.addBody(rollbody);
 
 //main objects
+  //obj loader
+  const loader = new THREE.OBJLoader();
+  /*because I am working on a file:// url and cannot use a webserver, I have to encode the object file as a base 64 url 
+    and then decode it or CORS will stop me from loading it. Also I have to use three.js v1.60.1 and all plugins v 1.47.0 because
+    es modules are blocked.*/
+  function returnobj(x) {
+    return('data:@file/octet-stream;base64,' + btoa(x));
+  };
   //materials
   const orangemat = new THREE.MeshPhysicalMaterial({color: 0xff4f00});
   const purplemat = new THREE.MeshPhysicalMaterial({color: 0xa020f0});
@@ -197,6 +205,12 @@ world.addBody(rollbody);
   enemy1b2.recieveShadow = true;
   enemy1a2.tr = enemy1b2;
   scene.add(enemy1b2);
+  //test
+  // load a resource
+  loader.load((returnobj(monkey_obj)),function(monkey){scene.add(monkey);
+    monkey.scale.set(5, 5, 5);
+    },
+  );
 
 //copy positions from cannon to three
 function positionsetter() {
@@ -254,10 +268,7 @@ function bodiesAreInContact(obj, group, y){
 //picking up stuff
 //check for max object hold distance
 function gdistance(p) {
-  if ((Math.abs(playerbody.position.x) - Math.abs(p.position.x) <= pickuprange) && (Math.abs(playerbody.position.y) - Math.abs(p.position.y) <= pickuprange) && (Math.abs(playerbody.position.z) - Math.abs(p.position.z) <= pickuprange) && (Math.abs(playerbody.position.x) - Math.abs(p.position.x) >= pickuprange * -1) && (Math.abs(playerbody.position.y) - Math.abs(p.position.y) >= pickuprange * -1) && (Math.abs(playerbody.position.z) - Math.abs(p.position.z) >= pickuprange * -1)) {
-    if (keystatus[10] == 1) {
-      alert(Math.abs(playerbody.position.x) - Math.abs(p.position.x))
-    }
+  if (Math.abs(playerbody.position.x) - Math.abs(p.position.x) <= pickuprange && Math.abs(playerbody.position.y) - Math.abs(p.position.y) <= pickuprange && Math.abs(playerbody.position.z) - Math.abs(p.position.z) <= pickuprange) {
     return true
   } else {
     return false
@@ -272,7 +283,6 @@ function pickup() {
     pobj.body.velocity.y = (playerbody.position.y - pobj.body.position.y + 5 * camdir.y) * strength;
     pobj.body.velocity.z = (playerbody.position.z - pobj.body.position.z + 5 * camdir.z) * strength;
     } else {
-      world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {collisionFilterMask: 1, collisionFilterGroup: 32}, pobj);
       etoggle = -1
     }
   } else {
