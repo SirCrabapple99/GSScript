@@ -1,5 +1,11 @@
 //js
 var etoggle = -1;
+function ts(x) {
+  return JSON.stringify(x);
+}
+function fs(x) {
+  return JSON.parse(x);
+}
 //settings
 /*base plane height*/  let floorheight = -20;
 /*player speed*/  let speed = 5;
@@ -190,7 +196,7 @@ world.addBody(rollbody);
   scene.add(sphere1b2);
   //cube 1
   const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
-  const cubeBody = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1});
+  const cubeBody = new CANNON.Body({mass: 100, collisionFilterGroup: 1, collisionFilterMask: -1});
   cubeBody.nameg = "Test Cube";
   cubeBody.addShape(cubeShape);
   cubeBody.position.set(0, 0, 0);
@@ -209,33 +215,36 @@ world.addBody(rollbody);
   enemy1b2.recieveShadow = true;
   enemy1a2.tr = enemy1b2;
   scene.add(enemy1b2);
-  /*create an object. params:
-  object is the model name (the variable defined in the model) set to 0 for a normal shape
+  /*addObject params:
+  object is the model name (the variable defined in the model)
   shape is the shape of the cannon object, might change later to allow multiple, probably not
   parameters1 is the cannon.js body params, ex: {mass: 10, collisionFilterGroup: 1, etc}
   amount is the amount of objects
-  (not added) positons is an array of vec3s that sets positions of each object, ex: [[1, 10, 30], [25, 15, 60], [-20, 40, -70]]
-  (optional)(not added)parameters2 is an array of the parameters of each three object. to copy another objects params, set to [-1, (index of params to be copied)]
-  parameters2 example: [[[parameter, value], [paremeter, value]], [[-1, 0]]]] (parameters2 array brackets, then another set of brackets for each object, then another for the parameter and it's value)
+  positons is an array of vec3s that sets positions of each object, ex: [[1, 10, 30], [25, 15, 60], [-20, 40, -70]]
+  example function: addObject(monkey_obj, new CANNON.Sphere(3), {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 2, [[Math.random() * 50, 20, Math.random() * 50], [Math.random() * 50, 20, Math.random() * 50]]);
   */
-  function addObject(object, shape, parameters1, amount, positions, parameters2) {
+  function addObject(object, shape, parameters1, amount, positions) {
   for (let i = 0; i < amount; i++) {
   let itema = shape
   let itemb = new CANNON.Body(parameters1);
   itemb.addShape(itema);
-  itemb.position.set(0, Math.random() * 100, 0);
-  objlistc[i] = itemb;
+  itemb.position.set(positions[i][0], positions[i][1], positions[i][2]);
+  objlistc[objlistc.length] = itemb;
   world.addBody(itemb);
   if (object != 0) {
   loader.load(returnobj(object),function(item){
     scene.add(item);
-    objlist[i] = item;
+    item.name = 'obj' + objlist.length;
+    item.castShadow = true;
+    item.scale.set(5, 5, 5);
+    objlist[objlist.length] = item;
   });
-  }
 }
 }
-addObject(monkey_obj, new CANNON.Sphere(2.5), {mass: 2.5, collisionFilterGroup: 1, collisionFilterMask: -1}, 3, 0);
-
+}
+for (let h = 0; h < 20; h++) {
+addObject(monkey_obj, new CANNON.Sphere(3), {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 2, [[Math.random() * 200, 20, Math.random() * 200], [Math.random() * 200, 20, Math.random() * 200]]);
+}
 //copy positions from cannon to three
 function poscopy(a, b) {
   a.position.copy(b.position);
@@ -248,7 +257,7 @@ function positionsetter() {
   poscopy(cube, cubeBody);
   //models
   for (var i = 0; i < objlist.length; i++) {
-    if (modelloaded[i] == 1) {
+    if (scene.getObjectByName('obj' + i)) {
       poscopy(objlist[i], objlistc[i]);
     }
   }
@@ -310,9 +319,9 @@ var pobj = new CANNON.RaycastResult
 function pickup() {
   if (etoggle == 1) {
     if (pobj.body != null && gdistance(pobj.body) == true) {
-    pobj.body.velocity.x = (playerbody.position.x - pobj.body.position.x + 5 * camdir.x) * strength;
-    pobj.body.velocity.y = (playerbody.position.y - pobj.body.position.y + 5 * camdir.y) * strength;
-    pobj.body.velocity.z = (playerbody.position.z - pobj.body.position.z + 5 * camdir.z) * strength;
+      pobj.body.velocity.x = ((playerbody.position.x - pobj.body.position.x + 5 * camdir.x)/(pobj.body.mass/7)) * strength;
+      pobj.body.velocity.y = ((playerbody.position.y - pobj.body.position.y + 5 * camdir.y)/(pobj.body.mass/7)) * strength;
+      pobj.body.velocity.z = ((playerbody.position.z - pobj.body.position.z + 5 * camdir.z)/(pobj.body.mass/7)) * strength;
     } else {
       etoggle = -1
     }
@@ -404,17 +413,10 @@ world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camer
 //render
 let t = 0;
 function render() {
-  for (var i = 0; i < objlist.length; i++) {
-    if (scene.getObjectById(objlist[i].id)) {
-      modelloaded[i] = 1;
-    } else {
-      modelloaded[i] = 0;
-    }
-  };
+  positionsetter();
   delta = Math.min(clock.getDelta(), 0.1);
   world.step(delta);
   mover();
-  positionsetter();
   t += delta;
   world.step(delta);
   requestAnimationFrame(render);
