@@ -540,8 +540,6 @@ function shoot() {
 //render
 
 let t = 0;
-var cannonDebugRenderer = new THREE.CannonDebugRenderer(scene, world, {});
-
 function render() {
     positionsetter();
     delta = Math.min(clock.getDelta(), 0.1);
