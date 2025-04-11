@@ -225,12 +225,6 @@ world.addBody(rollbody);
   */
   function addObject(object, shape, parameters1, amount, positions) {
   for (let i = 0; i < amount; i++) {
-  let itema = shape
-  let itemb = new CANNON.Body(parameters1);
-  itemb.addShape(itema);
-  itemb.position.set(positions[i][0], positions[i][1], positions[i][2]);
-  objlistc[objlistc.length] = itemb;
-  world.addBody(itemb);
   if (object != 0) {
   loader.load(returnobj(object),function(item){
     scene.add(item);
@@ -238,14 +232,64 @@ world.addBody(rollbody);
     item.castShadow = true;
     item.scale.set(5, 5, 5);
     objlist[objlist.length] = item;
+    let itema = shape
+    let itemb = new CANNON.Body(parameters1);
+    itemb.addShape(itema);
+    itemb.position.set(positions[i][0], positions[i][1], positions[i][2]);
+    objlistc[objlistc.length] = itemb;
+    world.addBody(itemb);
   });
 }
 }
 }
+
+/* unused because trimeshes don't work for collision with non spheres but I'm not gonna delete it yet
+var mmt = [];
+var mmt2 = []
+    for (var i = 0; i < 507; i++) {
+      mmt[mmt.length] = modelverts(monkey_obj, i, 0);
+      mmt[mmt.length] = modelverts(monkey_obj, i, 1);
+      mmt[mmt.length] = modelverts(monkey_obj, i, 2);
+    };
+    for (var i = 0; i < 965; i++) {
+     mmt2[mmt2.length] = modelfaces(monkey_obj, i, 0);
+     mmt2[mmt2.length] = modelfaces(monkey_obj, i, 1);
+     mmt2[mmt2.length] = modelfaces(monkey_obj, i, 2);
+    };
+
+  var shape22 = new CANNON.Trimesh(mmt, mmt2);
+  var shape23 = new CANNON.Body({mass: 15, collisionFilterGroup: 1, collisionFilterMask: -1});
+  shape23.addShape(shape22);
+  shape23.scale = new CANNON.Vec3(10, 10, 10);
+  shape23.position.y = 5;
+  shape23.position.z = 20;
+  world.addBody(shape23);
+
+//get model vertexes
+function modelverts(object, i, y) {
+  if (y == -1) {
+  return((object.split('\n').filter(line => line.startsWith('v ')))[i].replace(/v /, '')).replace(/ /g, ', ');
+  } else {
+    let verts = (object.split('\n').filter(line => line.startsWith('v ')))[i].replace(/v /, '');
+    let att = verts.split(' ');
+    return att[y];
+  }
+}
+function modelfaces(object, i, y) {
+  if (!y) {
+  return((object.split('\n').filter(line => line.startsWith('f ')))[i].replace(/f /, '')).replace(/ /g, ', ');
+  } else {
+    let verts = (object.split('\n').filter(line => line.startsWith('f ')))[i].replace(/f /, '');
+    let verts1 = verts.replace(/[1234567890]+[/][/]/g, '');
+    let att = verts1.split(' ');
+    return att[y];
+  }
+}
+  */
+
 for (let h = 0; h < 20; h++) {
 addObject(monkey_obj, new CANNON.Sphere(3), {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 2, [[Math.random() * 200, 20, Math.random() * 200], [Math.random() * 200, 20, Math.random() * 200]]);
 }
-//copy positions from cannon to three
 function poscopy(a, b) {
   a.position.copy(b.position);
   a.quaternion.copy(b.quaternion);
@@ -411,12 +455,16 @@ world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camer
   }
 }
 //render
+
 let t = 0;
+var cannonDebugRenderer = new THREE.CannonDebugRenderer(scene, world, {});
 function render() {
   positionsetter();
   delta = Math.min(clock.getDelta(), 0.1);
   world.step(delta);
+  
   mover();
+  
   t += delta;
   world.step(delta);
   requestAnimationFrame(render);
