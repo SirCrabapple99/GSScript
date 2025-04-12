@@ -313,9 +313,7 @@ function three_raycast() {
         hit.object.material.wireframe = false;
         hit = scene.children[gone];
     }
-    if (hit != scene.children[gone] && intersects[0] != scene.children[arrows[0]] && intersects[0] != scene.children[arrows[1]] && intersects[0] != scene.children[arrows[2]]) {
-        hit2 = hit;
-    }
+    hit2 = hit;
     // hitbase = hit.object.material.color;
     for (let i = 0; i < intersects.length; i++) {
         hit.object.material.wireframe = true;
@@ -329,10 +327,13 @@ function addbox() {
     if ((new RegExp(/box/i)).test(boxtype)) {
         let boxprompt = JSON.parse('[' + window.prompt("box size: x, y, z") + ']');
         let posprompt1 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
-        let pospos1 = new THREE.Vector3(posprompt1[0], posprompt1[1], posprompt1[2]);
-        newhitbox(new THREE.BoxGeometry(boxprompt[0], boxprompt[1], boxprompt[2]), pospos1);
+        let pos1 = new THREE.Vector3(posprompt1[0], posprompt1[1], posprompt1[2]);
+        newhitbox(new THREE.BoxGeometry(boxprompt[0], boxprompt[1], boxprompt[2]), pos1, [boxprompt[0], boxprompt[1], boxprompt[2]]);
     } else if ((new RegExp(/sphere/i)).test(boxtype)) {
-       
+        let sphereprompt = JSON.parse(window.prompt("sphere radius: r"));
+        let posprompt2 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
+        let pos2 = new THREE.Vector3(posprompt2[0], posprompt2[1], posprompt2[2]);
+        newhitbox(new THREE.SphereGeometry(sphereprompt, 32, 16), pos2);
     } else {
         alert("not a valid hitbox type");
         return;
@@ -342,23 +343,28 @@ function addbox() {
 //hitbox creator
 let hitboxnum = [];
 let hitboxmesh;
-function newhitbox(shape1, position) {
+function newhitbox(shape1, position, size) {
     let boxmat = new THREE.MeshPhysicalMaterial({color: 0x808080, transparent: true, opacity: 0.5});
     let hitboxmesh = new THREE.Mesh(shape1, boxmat);
     scene.add(hitboxmesh);
     hitboxnum[hitboxnum.length] = hitboxmesh;
     hitboxmesh.position.copy(position);
-    newcannon(hitboxmesh);
+    newcannon(hitboxmesh, position, size);
 }
 //final output creation
+let box12
 let cannondata = [];
-function newcannon(box) {
-    if (box.geometry.constructor == THREE.BoxGeometry) {
-        //cannondata[cannondata.length] = 
+function newcannon(box, position, size) {
+    if (box.geometry.constructor == THREE.BoxGeometry) { 
+        cannondata[cannondata.length] = '["let box11 = new CANNON.Box('+v3(size[0], size[1], size[2])+');", "box12 = new CANNON.Body({mass: 5});", "box12.addShape(box11);", "world.addBody(box12);"]';
+        navigator.clipboard.writeText(btoa((cannondata[0])));
+        var testvar = atob("WyJsZXQgYm94MTEgPSBuZXcgQ0FOTk9OLkJveCg1LDUsNSk7IiwgImJveDEyID0gbmV3IENBTk5PTi5Cb2R5KHttYXNzOiA1fSk7IiwgImJveDEyLmFkZFNoYXBlKGJveDExKTsiLCAid29ybGQuYWRkQm9keShib3gxMik7Il0="); 
+        for (let i = 0; i < JSON.parse(testvar).length; i++) {
+            eval(JSON.parse(testvar[i]));1
+        }
     } else {
-        alert("fail")
+        alert("fail");
     }
-//    cannondata[cannondata.length];
 }
 
 //render loop
@@ -369,6 +375,10 @@ function poscopy(a, b) {
 
 function positionsetter() {
     poscopy(planeb, planea);
+    if (box12) {
+        alert("hi")
+        poscopy(hitboxmesh, box12);
+    }
     /* if (hit2 && hit != scene.children[gone]) {
          arrowset(hit2.object);
      } else {
