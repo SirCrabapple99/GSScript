@@ -49,7 +49,7 @@ document.addEventListener("mousedown", three_raycast);
 
 //input
 
-var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, "u", 0, "o"];
+var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, "u", 0, "o", 0, "t", 0, "g", 0, "f", 0, "h"];
 
 let localr = -1
 
@@ -70,8 +70,11 @@ let translateZ
 
 function mover() {
     camera.getWorldDirection(camdir);
+    camdir.x /= 3;
+    camdir.y /= 3;
+    camdir.z /= 3;
     if (keystatus[0] == 1) {
-        camera.rotation.x += camdir.x;
+        camera.position.x += camdir.x;
         camera.position.z += camdir.z;
     }
     if (keystatus[2] == 1) {
@@ -87,82 +90,94 @@ function mover() {
         camera.position.z += camdir.x;
     };
     if (keystatus[8] == 1) {
-        camera.position.y += 1;
+        camera.position.y += 0.15;
     };
     if (keystatus[10] == 1) {
-        camera.position.y -= 1;
+        camera.position.y -= 0.15;
     };
-    if (keystatus[18] == 1) {
+    if (keystatus[18] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.translateZ(0.05);
         } else {
             hit2.object.position.z -= 0.05;
         }
     };
-    if (keystatus[20] == 1) {
+    if (keystatus[20] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.translateZ(-0.05);
         } else {
             hit2.object.position.z += 0.05;
         }
     };
-    if (keystatus[22] == 1) {
+    if (keystatus[22] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.translateX(-0.05);
         } else {
             hit2.object.position.x -= 0.05;
         }
     };
-    if (keystatus[24] == 1) {
+    if (keystatus[24] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.translateX(0.05);
         } else {
             hit2.object.position.x += 0.05;
         }
     };
-    if (keystatus[26] == 1) {
+    if (keystatus[26] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.rotateX(0.05);
         } else {
             hit2.object.rotation.x -= 0.05;
         }
     };
-    if (keystatus[28] == 1) {
+    if (keystatus[28] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.rotateX(-0.05);
         } else {
             hit2.object.rotation.x += 0.05;
         }
     };
-    if (keystatus[30] == 1) {
+    if (keystatus[30] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.rotateZ(-0.05);
         } else {
             hit2.object.rotation.z += 0.05;
         }
     };
-    if (keystatus[32] == 1) {
+    if (keystatus[32] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.rotateZ(0.05);
         } else {
             hit2.object.rotation.z -= 0.05;
         }
     };
-    if (keystatus[34] == 1) {
+    if (keystatus[34] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.translateY(-0.05);
         } else {
             hit2.object.position.y -= 0.05;
         }
     };
-    if (keystatus[36] == 1) {
+    if (keystatus[36] == 1 && hit2) {
         if (localr == 1) {
             hit2.object.translateY(0.05);
         } else {
             hit2.object.position.y += 0.05;
         }
     };
-    if (keystatus[14] == 1) {
+    if (keystatus[38] == 1) {
+        camera.rotateX(0.01);
+    };
+    if (keystatus[40] == 1) {
+        camera.rotateX(-0.01);
+    };
+    if (keystatus[42] == 1) {
+        camera.rotation.y += 0.01;
+    };
+    if (keystatus[44] == 1) {
+        camera.rotation.y -= 0.01;
+    };
+    if (keystatus[14] == 1 && hit2) {
         hit2.object.position.x = 0;
         hit2.object.position.y = 0;
         hit2.object.position.z = 0;
