@@ -48,7 +48,6 @@ document.addEventListener("pointermove", mousemovement);
 document.addEventListener("mousedown", three_raycast);
 
 //input
-
 var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, "u", 0, "o", 0, "t", 0, "g", 0, "f", 0, "h"];
 
 let localr = -1
@@ -193,11 +192,6 @@ const modelmat = new THREE.MeshPhysicalMaterial({
     transparent: true,
     opacity: 0.5
 });
-const boxmat = new THREE.MeshPhysicalMaterial({
-    color: 0x808080,
-    transparent: true,
-    opacity: 0.5
-});
 const whitemat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff
 });
@@ -223,19 +217,13 @@ const gone = new THREE.Mesh(gone1, whitemat);
 scene.add(gone);
 gone.position.set(0, 500, 0);
 
-//cube test
-const cubeb1 = new THREE.BoxGeometry(10, 10, 10);
-const cubeb = new THREE.Mesh(cubeb1, boxmat);
-scene.add(cubeb);
-cubeb.position.set(10, 0, 12)
-
 //lights
 const sun = new THREE.HemisphereLight(0x404040);
 sun.intensity = 5;
 scene.add(sun);
 
 //scene interactions
-//model loader
+//3d model loader
 const loader = new THREE.OBJLoader();
 
 function returnobj(x) {
@@ -266,7 +254,7 @@ addObject(monkey_obj, 1, [
     [0, 0, 0]
 ]);
 
-//object moving
+//object selecting
 //directional arrows
 let dir = [];
 let origin;
@@ -291,14 +279,15 @@ let length;
     arrows[i] = arrowHelper;
 }; */
 
-function arrowset(object) {
+/*function arrowset(object) {
     for (var i = 0; i < 3; i++) {
         arrows[i].position.copy(object.position)
     }
     arrows[1].quaternion.set(object.quaternion.x, object.quaternion.y, object.quaternion.z, object.quaternion.w);
     arrows[0].quaternion.multiplyQuaternions(arrows[1].quaternion, new THREE.Quaternion(1, 0, 0, 1).normalize());
     arrows[2].quaternion.multiplyQuaternions(arrows[1].quaternion, new THREE.Quaternion(0, 0, 1, 1).normalize());
-};
+};*/
+
 //object picking
 let selected;
 const raycaster = new THREE.Raycaster();
@@ -332,8 +321,45 @@ function three_raycast() {
         hit.object.material.wireframe = true;
     };
 };
-//object moving
 
+//the important part
+//buttons
+function addbox() {
+    let boxtype = window.prompt("type of hitbox (box/sphere)");
+    if ((new RegExp(/box/i)).test(boxtype)) {
+        let boxprompt = JSON.parse('[' + window.prompt("box size: x, y, z") + ']');
+        let posprompt1 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
+        let pospos1 = new THREE.Vector3(posprompt1[0], posprompt1[1], posprompt1[2]);
+        newhitbox(new THREE.BoxGeometry(boxprompt[0], boxprompt[1], boxprompt[2]), pospos1);
+    } else if ((new RegExp(/sphere/i)).test(boxtype)) {
+       
+    } else {
+        alert("not a valid hitbox type");
+        return;
+    }
+}
+
+//hitbox creator
+let hitboxnum = [];
+let hitboxmesh;
+function newhitbox(shape1, position) {
+    let boxmat = new THREE.MeshPhysicalMaterial({color: 0x808080, transparent: true, opacity: 0.5});
+    let hitboxmesh = new THREE.Mesh(shape1, boxmat);
+    scene.add(hitboxmesh);
+    hitboxnum[hitboxnum.length] = hitboxmesh;
+    hitboxmesh.position.copy(position);
+    newcannon(hitboxmesh);
+}
+//final output creation
+let cannondata = [];
+function newcannon(box) {
+    if (box.geometry.constructor == THREE.BoxGeometry) {
+        //cannondata[cannondata.length] = 
+    } else {
+        alert("fail")
+    }
+//    cannondata[cannondata.length];
+}
 
 //render loop
 function poscopy(a, b) {
