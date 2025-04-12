@@ -48,10 +48,16 @@ document.addEventListener("pointermove", mousemovement);
 document.addEventListener("mousedown", three_raycast);
 
 //input
-var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift"];
+
+var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, "u", 0, "o"];
+
+let localr = -1
 
 function keyinput(e) {
     keystatus[keystatus.indexOf(e.key) - 1] = 1;
+    if (keystatus[12] == 1) {
+        localr *= -1;
+    };
 };
 
 function keyupinput(e) {
@@ -59,6 +65,8 @@ function keyupinput(e) {
 };
 
 let camdir = new THREE.Vector3(0, 0, 0)
+
+let translateZ
 
 function mover() {
     camera.getWorldDirection(camdir);
@@ -83,6 +91,84 @@ function mover() {
     };
     if (keystatus[10] == 1) {
         camera.position.y -= 1;
+    };
+    if (keystatus[18] == 1) {
+        if (localr == 1) {
+            hit2.object.translateZ(0.05);
+        } else {
+            hit2.object.position.z -= 0.05;
+        }
+    };
+    if (keystatus[20] == 1) {
+        if (localr == 1) {
+            hit2.object.translateZ(-0.05);
+        } else {
+            hit2.object.position.z += 0.05;
+        }
+    };
+    if (keystatus[22] == 1) {
+        if (localr == 1) {
+            hit2.object.translateX(-0.05);
+        } else {
+            hit2.object.position.x -= 0.05;
+        }
+    };
+    if (keystatus[24] == 1) {
+        if (localr == 1) {
+            hit2.object.translateX(0.05);
+        } else {
+            hit2.object.position.x += 0.05;
+        }
+    };
+    if (keystatus[26] == 1) {
+        if (localr == 1) {
+            hit2.object.rotateX(0.05);
+        } else {
+            hit2.object.rotation.x -= 0.05;
+        }
+    };
+    if (keystatus[28] == 1) {
+        if (localr == 1) {
+            hit2.object.rotateX(-0.05);
+        } else {
+            hit2.object.rotation.x += 0.05;
+        }
+    };
+    if (keystatus[30] == 1) {
+        if (localr == 1) {
+            hit2.object.rotateZ(-0.05);
+        } else {
+            hit2.object.rotation.z += 0.05;
+        }
+    };
+    if (keystatus[32] == 1) {
+        if (localr == 1) {
+            hit2.object.rotateZ(0.05);
+        } else {
+            hit2.object.rotation.z -= 0.05;
+        }
+    };
+    if (keystatus[34] == 1) {
+        if (localr == 1) {
+            hit2.object.translateY(-0.05);
+        } else {
+            hit2.object.position.y -= 0.05;
+        }
+    };
+    if (keystatus[36] == 1) {
+        if (localr == 1) {
+            hit2.object.translateY(0.05);
+        } else {
+            hit2.object.position.y += 0.05;
+        }
+    };
+    if (keystatus[14] == 1) {
+        hit2.object.position.x = 0;
+        hit2.object.position.y = 0;
+        hit2.object.position.z = 0;
+        hit2.object.rotation.x = 0;
+        hit2.object.rotation.y = 0;
+        hit2.object.rotation.z = 0;
     };
 };
 //scene things
@@ -171,7 +257,7 @@ let dir = [];
 let origin;
 let hex;
 let length;
-for (var i = 0; i < 3; i++) {
+/* for (var i = 0; i < 3; i++) {
     if (i == 0) {
         dir[i] = new THREE.Vector3(1, 0, 0);
         hex = 0xff0000;
@@ -188,7 +274,7 @@ for (var i = 0; i < 3; i++) {
     let arrowHelper = new THREE.ArrowHelper(dir[i], origin, length, hex);
     scene.add(arrowHelper);
     arrows[i] = arrowHelper;
-};
+}; */
 
 function arrowset(object) {
     for (var i = 0; i < 3; i++) {
@@ -212,18 +298,18 @@ let hit2;
 let intersects;
 
 function three_raycast() {
+    raycaster.setFromCamera(pointer, camera);
+    intersects = raycaster.intersectObjects(scene.children);
     if (hit2) {
         hit2.object.material.wireframe = false;
     }
-    raycaster.setFromCamera(pointer, camera);
-    intersects = raycaster.intersectObjects(scene.children);
     if (intersects[0]) {
         hit = intersects[0];
     } else {
         hit.object.material.wireframe = false;
         hit = scene.children[gone];
     }
-    if (hit.object != arrows[0] && hit.object != arrows[1] && hit.object != arrows[2] && hit == intersects[0]) {
+    if (hit != scene.children[gone] && intersects[0] != scene.children[arrows[0]] && intersects[0] != scene.children[arrows[1]] && intersects[0] != scene.children[arrows[2]]) {
         hit2 = hit;
     }
     // hitbase = hit.object.material.color;
@@ -242,11 +328,11 @@ function poscopy(a, b) {
 
 function positionsetter() {
     poscopy(planeb, planea);
-    if (hit2 && hit != scene.children[gone]) {
-        arrowset(hit2.object);
-    } else {
-        arrowset(gone)
-    }
+    /* if (hit2 && hit != scene.children[gone]) {
+         arrowset(hit2.object);
+     } else {
+         arrowset(gone)
+     }*/
 };
 
 function render() {
