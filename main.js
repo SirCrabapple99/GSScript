@@ -264,18 +264,16 @@ scene.add(sphere1b2);
 //cube 1
 const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
 const cubeBody = new CANNON.Body({
-    mass: 100,
+    mass: 10,
     collisionFilterGroup: 1,
     collisionFilterMask: -1
 });
 cubeBody.nameg = "Test Cube";
 const sphere2a = new CANNON.Sphere(5);
-cubeBody.addShape(cubeShape, v3(0, 10, 0), new CANNON.Quaternion(0, 0, 0, 1))
+cubeBody.addShape(cubeShape)
 
-cubeBody.position.set(0, 0, 0);
+cubeBody.position.set(0, -10, 0);
 world.addBody(cubeBody);
-//hitbox test
-let box1008102 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape450386 = new CANNON.Sphere(2); box1008102.addShape(shape450386, v3(0,1.2500000000000004,-0.2), q4(0,0,0,1)); const shape1370409 = new CANNON.Box(v3(1.5,2.5,1)); box1008102.addShape(shape1370409, v3(0,-2.3999999999999995,2.549999999999999), q4(-0.02499739591471234,0,0,0.9996875162757026)); world.addBody(box1008102);
 //enemy test
 const enemy1a = new CANNON.Cylinder(6, 6, 10, 24);
 const enemy1a2 = new CANNON.Body({
@@ -302,7 +300,7 @@ amount is the amount of objects
 positons is an array of vec3s that sets positions of each object, ex: [[1, 10, 30], [25, 15, 60], [-20, 40, -70]]
 example function: addObject(monkey_obj, new CANNON.Sphere(3), {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 2, [[Math.random() * 50, 20, Math.random() * 50], [Math.random() * 50, 20, Math.random() * 50]]);
 */
-function addObject(object, shape, parameters1, amount, positions) {
+function addObject(object, box, parameters1, amount, positions) {
     for (let i = 0; i < amount; i++) {
         if (object != 0) {
             loader.load(returnobj(object), function(item) {
@@ -311,12 +309,11 @@ function addObject(object, shape, parameters1, amount, positions) {
                 item.castShadow = true;
                 item.scale.set(5, 5, 5);
                 objlist[objlist.length] = item;
-                let itema = shape
-                let itemb = new CANNON.Body(parameters1);
-                itemb.addShape(itema);
-                itemb.position.set(positions[i][0], positions[i][1], positions[i][2]);
-                objlistc[objlistc.length] = itemb;
-                world.addBody(itemb);
+                //monkey hitbox
+                let box1302571 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape645426 = new CANNON.Sphere(1.875); box1302571.addShape(shape645426, v3(0,1.4500000000000006,-0.65), q4(0,0,0,1)); const shape6531925 = new CANNON.Box(v3(1.5,2.5,1)); box1302571.addShape(shape6531925, v3(0,-2.25,2.6499999999999986), q4(-6.938893903907228e-18,0,0,1)); const shape3674056 = new CANNON.Box(v3(1.75,1.375,0.5)); box1302571.addShape(shape3674056, v3(-4.799999999999991,0.8500000000000001,-1.9000000000000088), q4(0.03031364357631054,-0.17144890372772567,-0.17144890372772567,0.9696863564236894)); const shape2946292 = new CANNON.Box(v3(1.75,1.5,0.5)); box1302571.addShape(shape2946292, v3(5.349999999999989,0.8500000000000004,-2.000000000000001), q4(0.01983383807620987,0.19767681165408385,0.09784339500725571,0.975170327201816)); const shape3511336 = new CANNON.Box(v3(3,2.5,2)); box1302571.addShape(shape3511336, v3(0,1.2500000000000004,1.8500000000000008), q4(0,0,0,1)); world.addBody(box1302571);
+                box1302571.position.set(positions[i][0], positions[i][1], positions[i][2]);
+                objlistc[objlistc.length] = box1302571;
+                world.addBody(box1302571);
             });
         }
     }
@@ -366,7 +363,7 @@ function modelfaces(object, i, y) {
 }
   */
 
-for (let h = 0; h < 1; h++) {
+for (let h = 0; h < 20; h++) {
     addObject(monkey_obj, new CANNON.Sphere(3), {
         mass: 1,
         collisionFilterGroup: 1,
@@ -390,7 +387,7 @@ function positionsetter() {
     //models
     for (var i = 0; i < objlist.length; i++) {
         if (scene.getObjectByName('obj' + i)) {
-            poscopy(objlist[i], box1008102);
+            poscopy(objlist[i], objlistc[i]);
         }
     }
 }
@@ -430,7 +427,7 @@ function bodiesAreInContact(obj, group, y) {
         if (c.bi === obj && c.bj.collisionFilterGroup === group) {
             return true;
         } else if (c.bi === obj && c.bj.collisionFilterGroup === 1 && y != 1) {
-            if (bodiesAreInContact(c.bj, 2, 1) === true) {
+            if (bodiesAreInContact(c.bj, group, 1) === true) {
                 return true;
             }
         }
@@ -500,7 +497,7 @@ function mover() {
         rollbody.velocity.z += camdir.x;
     };
     if (keystatus[8] == 1) {
-        if (bodiesAreInContact(rollbody, 2) === true) {
+        if (bodiesAreInContact(rollbody, 2, 0) === true) {
             rollbody.velocity.y += jump;
         }
     };
