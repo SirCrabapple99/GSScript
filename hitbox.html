@@ -23,7 +23,6 @@
         right: 0;
         bottom: 0;
         z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-        cursor: pointer; /* Add a pointer on hover */
       }
       #cursor{
         position: absolute;
@@ -40,10 +39,13 @@
   </head>
   <body>
     <div id="ui">
-      <div id="cursor">●</div>
+      <button id="addbox" onclick="addbox()">create new hitbox</button>
+      <br><button id="exportdata" onclick="exportdata()">export hitbox data</button>
     </div>
     <div id="renderdiv"></div>
-    
+    <script src="libs/eruda.min.js"></script>
+    <script>eruda.init();</script>
+
     <libs_and_plugins>
     <script src="libs/cannon.min.js"></script>
     <script src="libs/three.min.js"></script>

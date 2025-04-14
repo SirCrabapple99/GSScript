@@ -343,25 +343,35 @@ function addbox() {
 //hitbox creator
 let hitboxnum = [];
 let hitboxmesh;
+let functionfunction;
+let exportvalues = [];
+
 function newhitbox(shape1, position, size) {
-    let boxmat = new THREE.MeshPhysicalMaterial({color: 0x808080, transparent: true, opacity: 0.5});
+    let boxmat = new THREE.MeshPhysicalMaterial({
+        color: 0x808080,
+        transparent: true,
+        opacity: 0.5
+    });
     let hitboxmesh = new THREE.Mesh(shape1, boxmat);
     scene.add(hitboxmesh);
     hitboxnum[hitboxnum.length] = hitboxmesh;
     hitboxmesh.position.copy(position);
-    newcannon(hitboxmesh, position, size);
+    exportvalues[0] = hitboxmesh;
+    exportvalues[1] = size;
+}
+
+function exportdata() {
+    newcannon(exportvalues[0], 0, exportvalues[1]);
+    navigator.clipboard.writeText(((cannondata[0])));
 }
 //final output creation
-let box12
 let cannondata = [];
+
 function newcannon(box, position, size) {
-    if (box.geometry.constructor == THREE.BoxGeometry) { 
-        cannondata[cannondata.length] = '["let box11 = new CANNON.Box('+v3(size[0], size[1], size[2])+');", "box12 = new CANNON.Body({mass: 5});", "box12.addShape(box11);", "world.addBody(box12);"]';
-        navigator.clipboard.writeText(btoa((cannondata[0])));
-        var testvar = atob("WyJsZXQgYm94MTEgPSBuZXcgQ0FOTk9OLkJveCg1LDUsNSk7IiwgImJveDEyID0gbmV3IENBTk5PTi5Cb2R5KHttYXNzOiA1fSk7IiwgImJveDEyLmFkZFNoYXBlKGJveDExKTsiLCAid29ybGQuYWRkQm9keShib3gxMik7Il0="); 
-        for (let i = 0; i < JSON.parse(testvar).length; i++) {
-            eval(JSON.parse(testvar[i]));1
-        }
+    if (box.geometry.constructor == THREE.BoxGeometry) {
+        const tempbox = 'box' + Math.round(Math.random() * 10000000);
+        const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
+        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Box(v3(' + size[0] / 2, size[1] / 2, size[2] / 2 + ')); ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); ' + tempbox + '.addShape(' + tempbox2 + '); ' + tempbox + '.quaternion.set(' + box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w + '); world.addBody(' + tempbox + ');']
     } else {
         alert("fail");
     }
@@ -375,8 +385,7 @@ function poscopy(a, b) {
 
 function positionsetter() {
     poscopy(planeb, planea);
-    if (box12) {
-        alert("hi")
+    if (hitboxmesh && box12) {
         poscopy(hitboxmesh, box12);
     }
     /* if (hit2 && hit != scene.children[gone]) {
