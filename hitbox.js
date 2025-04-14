@@ -37,6 +37,10 @@ function v3(x, y, z) {
     return (new CANNON.Vec3(x, y, z));
 };
 
+function q4(x, y, z, w) {
+    return (new CANNON.Quaternion(x, y, z, w));
+};
+
 function intorad(x) {
     return (x * (Math.PI / 180));
 };
@@ -356,22 +360,28 @@ function newhitbox(shape1, position, size) {
     scene.add(hitboxmesh);
     hitboxnum[hitboxnum.length] = hitboxmesh;
     hitboxmesh.position.copy(position);
-    exportvalues[0] = hitboxmesh;
-    exportvalues[1] = size;
+    exportvalues[exportvalues.length] = hitboxmesh;
+    exportvalues[exportvalues.length] = size;
 }
 
 function exportdata() {
-    newcannon(exportvalues[0], 0, exportvalues[1]);
-    navigator.clipboard.writeText(((cannondata[0])));
+    exportdata1[0] = ['let ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); ']
+    for (var i = 0; i < hitboxnum.length; i++) {
+        newcannon(exportvalues[i * 2], 0, exportvalues[i * 2 + 1]);
+        exportdata1[0] = [exportdata1[0] + cannondata[cannondata.length - 1]];
+    }
+    navigator.clipboard.writeText(exportdata1[0]);
 }
+
 //final output creation
 let cannondata = [];
-
+let exportdata1 = [];
+const tempbox = 'box' + Math.round(Math.random() * 10000000);
+exportdata[0] = ['let ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); '];
 function newcannon(box, position, size) {
     if (box.geometry.constructor == THREE.BoxGeometry) {
-        const tempbox = 'box' + Math.round(Math.random() * 10000000);
         const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
-        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Box(v3(' + size[0] / 2, size[1] / 2, size[2] / 2 + ')); ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); ' + tempbox + '.addShape(' + tempbox2 + '); ' + tempbox + '.quaternion.set(' + box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w + '); world.addBody(' + tempbox + ');']
+        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Box(v3(' + size[0] / 2, size[1] / 2, size[2] / 2 + ')); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); ']
     } else {
         alert("fail");
     }
