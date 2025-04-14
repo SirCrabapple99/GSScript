@@ -52,7 +52,7 @@ document.addEventListener("pointermove", mousemovement);
 document.addEventListener("mousedown", three_raycast);
 
 //input
-var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, "u", 0, "o", 0, "t", 0, "g", 0, "f", 0, "h"];
+var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, "u", 0, "o", 0, "t", 0, "g", 0, "f", 0, "h", 0, "z"];
 
 let localr = -1
 
@@ -60,6 +60,13 @@ function keyinput(e) {
     keystatus[keystatus.indexOf(e.key) - 1] = 1;
     if (keystatus[12] == 1) {
         localr *= -1;
+    };
+    if (keystatus[46] == 1 && hitboxnum && exportvalues) {
+        setTimeout(() => {
+            scene.remove(hitboxnum[hitboxnum.length - 1]);
+            hitboxnum.splice(hitboxnum.length - 1, 1);
+            exportvalues.splice(exportvalues.length - 2, 2);
+        }, 500);
     };
 };
 
@@ -194,7 +201,7 @@ function mover() {
 const modelmat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff,
     transparent: true,
-    opacity: 0.5
+    opacity: 0.25
 });
 const whitemat = new THREE.MeshPhysicalMaterial({
     color: 0xffffff
@@ -327,7 +334,7 @@ function three_raycast() {
 //the important part
 //buttons
 function addbox() {
-    let boxtype = window.prompt("type of hitbox (box/sphere)");
+    let boxtype = window.prompt("type of hitbox (box/sphere/cylinder)");
     if ((new RegExp(/box/i)).test(boxtype)) {
         let boxprompt = JSON.parse('[' + window.prompt("box size: x, y, z") + ']');
         let posprompt1 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
@@ -338,6 +345,11 @@ function addbox() {
         let posprompt2 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
         let pos2 = new THREE.Vector3(posprompt2[0], posprompt2[1], posprompt2[2]);
         newhitbox(new THREE.SphereGeometry(sphereprompt, 32, 16), pos2, sphereprompt);
+    } else if ((new RegExp(/cylinder/i)).test(boxtype)) {
+        let cylinderprompt = JSON.parse('['+window.prompt("top r, bottom r, height, segments")+']');
+        let posprompt3 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
+        let pos3 = new THREE.Vector3(posprompt3[0], posprompt3[1], posprompt3[2]);
+        newhitbox(new THREE.CylinderGeometry(cylinderprompt[0], cylinderprompt[1], cylinderprompt[2], cylinderprompt[3]), pos3, [cylinderprompt[0], cylinderprompt[1], cylinderprompt[2], cylinderprompt[3]]);
     } else {
         alert("not a valid hitbox type");
         return;
@@ -354,7 +366,7 @@ function newhitbox(shape1, position, size) {
     let boxmat = new THREE.MeshPhysicalMaterial({
         color: 0x808080,
         transparent: true,
-        opacity: 0.5
+        opacity: 0.25
     });
     let hitboxmesh = new THREE.Mesh(shape1, boxmat);
     scene.add(hitboxmesh);
@@ -376,10 +388,17 @@ function newcannon(box, position, size) {
     } else if (box.geometry.constructor == THREE.SphereGeometry) {
         const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
         cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Sphere(' + size / 2 + '); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
+    } else if (box.geometry.constructor == THREE.CylinderGeometry) {
+        const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
+        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Cylinder(' + size[0] / 2, size[1] / 2, size[2] / 2, size[3]'); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
+    } else {
+        alert("fail");
     }
-}
+};
 
 function exportdata() {
+    cannondata = [];
+    exportdata1 = [];
     exportdata1[0] = ['let ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); ']
     for (var i = 0; i < hitboxnum.length; i++) {
         newcannon(exportvalues[i * 2], 0, exportvalues[i * 2 + 1]);
