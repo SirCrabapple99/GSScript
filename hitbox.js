@@ -390,7 +390,7 @@ function newcannon(box, position, size) {
         cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Sphere(' + size / 2 + '); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
     } else if (box.geometry.constructor == THREE.CylinderGeometry) {
         const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
-        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Cylinder(' + size[0] / 2, size[1] / 2, size[2] / 2, size[3]'); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
+        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Cylinder(' + size[0] / 2, size[1] / 2, size[2] / 2, size[3] / 2 + '); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
     } else {
         alert("fail");
     }
