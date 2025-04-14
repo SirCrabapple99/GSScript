@@ -423,17 +423,17 @@ function mover() {
     camdir.z *= speed1;
     if (keystatus[0] == 1) {
         if (noclip == 1) {
-            rollbody.velocity.x += camdir.x;
-            rollbody.velocity.z += camdir.z;
+            playerbody.velocity.x += camdir.x;
+            playerbody.velocity.z += camdir.z;
             rollbody.velocity.y += camdir.z;
         } else {
-            rollbody.velocity.x += camdir.x;
-            rollbody.velocity.z += camdir.z;
+            playerbody.velocity.x += camdir.x;
+            playerbody.velocity.z += camdir.z;
         }
     }
     if (keystatus[2] == 1) {
-        rollbody.velocity.x += camdir.z;
-        rollbody.velocity.z += camdir.x * -1;
+        playerbody.velocity.x += camdir.z;
+        playerbody.velocity.z += camdir.x * -1;
     };
     if (keystatus[4] == 1) {
         if (noclip == 1) {
@@ -441,13 +441,13 @@ function mover() {
             playerbody.velocity.z -= camdir.z;
             rollbody.velocity.y -= camdir.z;
         } else {
-            rollbody.velocity.x -= camdir.x;
-            rollbody.velocity.z -= camdir.z;
+            playerbody.velocity.x -= camdir.x;
+            playerbody.velocity.z -= camdir.z;
         }
     }
     if (keystatus[6] == 1) {
-        rollbody.velocity.x += camdir.z * -1;
-        rollbody.velocity.z += camdir.x;
+        playerbody.velocity.x += camdir.z * -1;
+        playerbody.velocity.z += camdir.x;
     };
     if (keystatus[8] == 1) {
         if (bodiesAreInContact(rollbody, 2, 0) === true) {
@@ -470,20 +470,20 @@ function mover() {
             rollbody.velocity.y = Math.max(terminal * -1, rollbody.velocity.y - 0.5);
         }
     }
-    if (rollbody.velocity.x >= 0) {
-        rollbody.velocity.x = Math.min(terminal, rollbody.velocity.x - 0.5);
+    if (playerbody.velocity.x >= 0) {
+        playerbody.velocity.x = Math.min(terminal, playerbody.velocity.x - 0.5);
     } else {
-        rollbody.velocity.x = Math.max(terminal * -1, rollbody.velocity.x + 0.5);
+        playerbody.velocity.x = Math.max(terminal * -1, playerbody.velocity.x + 0.5);
     }
 
-    if (rollbody.velocity.z >= 0) {
-        rollbody.velocity.z = Math.min(terminal, rollbody.velocity.z - 0.5);
+    if (playerbody.velocity.z >= 0) {
+        playerbody.velocity.z = Math.min(terminal, playerbody.velocity.z - 0.5);
     } else {
-        rollbody.velocity.z = Math.max(terminal * -1, rollbody.velocity.z + 0.5);
+        playerbody.velocity.z = Math.max(terminal * -1, playerbody.velocity.z + 0.5);
     }
     pickup(etoggle);
-    playerbody.position.x = rollbody.position.x;
-    playerbody.position.z = rollbody.position.z;
+    rollbody.position.x = playerbody.position.x;
+    rollbody.position.z = playerbody.position.z;
     playerbody.position.y = rollbody.position.y + 10;
 }
 //shooting
