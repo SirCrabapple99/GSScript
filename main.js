@@ -1,6 +1,14 @@
 //js
 var etoggle = -1;
 
+function v3(x, y, z) {
+    return (new CANNON.Vec3(x, y, z));
+};
+
+function q4(x, y, z, w) {
+    return (new CANNON.Quaternion(x, y, z, w));
+};
+
 function ts(x) {
     return JSON.stringify(x);
 }
@@ -261,9 +269,13 @@ const cubeBody = new CANNON.Body({
     collisionFilterMask: -1
 });
 cubeBody.nameg = "Test Cube";
-cubeBody.addShape(cubeShape);
+const sphere2a = new CANNON.Sphere(5);
+cubeBody.addShape(cubeShape, v3(0, 10, 0), new CANNON.Quaternion(0, 0, 0, 1))
+
 cubeBody.position.set(0, 0, 0);
 world.addBody(cubeBody);
+//hitbox test
+let box1008102 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape450386 = new CANNON.Sphere(2); box1008102.addShape(shape450386, v3(0,1.2500000000000004,-0.2), q4(0,0,0,1)); const shape1370409 = new CANNON.Box(v3(1.5,2.5,1)); box1008102.addShape(shape1370409, v3(0,-2.3999999999999995,2.549999999999999), q4(-0.02499739591471234,0,0,0.9996875162757026)); world.addBody(box1008102);
 //enemy test
 const enemy1a = new CANNON.Cylinder(6, 6, 10, 24);
 const enemy1a2 = new CANNON.Body({
@@ -354,12 +366,12 @@ function modelfaces(object, i, y) {
 }
   */
 
-for (let h = 0; h < 20; h++) {
+for (let h = 0; h < 1; h++) {
     addObject(monkey_obj, new CANNON.Sphere(3), {
         mass: 1,
         collisionFilterGroup: 1,
         collisionFilterMask: -1
-    }, 2, [
+    }, 1, [
         [Math.random() * 200, 20, Math.random() * 200],
         [Math.random() * 200, 20, Math.random() * 200]
     ]);
@@ -378,7 +390,7 @@ function positionsetter() {
     //models
     for (var i = 0; i < objlist.length; i++) {
         if (scene.getObjectByName('obj' + i)) {
-            poscopy(objlist[i], objlistc[i]);
+            poscopy(objlist[i], box1008102);
         }
     }
 }
