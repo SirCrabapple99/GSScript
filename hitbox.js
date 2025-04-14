@@ -1,3 +1,4 @@
+var istool = 1;
 //base things
 //cannon
 const world = new CANNON.World();
@@ -222,21 +223,8 @@ const whitemat = new THREE.MeshPhysicalMaterial({
 });
 
 //scene objects
-//plane
-const planea1 = new CANNON.Box(v3(500, 2, 500));
-const planea = new CANNON.Body({
-    mass: 0,
-    collisionFilterGroup: 2,
-    collisionFilterMask: -1
-});
-planea.addShape(planea1);
-planea.position.set(0, -10, 0);
-world.addBody(planea);
-const planeb1 = new THREE.BoxGeometry(1000, 4, 1000);
-const planeb = new THREE.Mesh(planeb1, whitemat);
-scene.add(planeb);
 
-//arrow hider
+//selection hider
 const gone1 = new THREE.BoxGeometry(5, 5, 5);
 const gone = new THREE.Mesh(gone1, whitemat);
 scene.add(gone);
@@ -256,7 +244,6 @@ function returnobj(x) {
 };
 
 let objlist = [];
-let arrows = [];
 let modelloaded = [];
 let item;
 
@@ -275,44 +262,14 @@ function addObject(object, amount, positions) {
         }
     }
 }
-addObject(monkey_obj, 1, [
-    [0, 0, 0]
-]);
+
+addObject(monkey_obj, 1, [[0, 0, 0]]);
 
 //object selecting
-//directional arrows
 let dir = [];
 let origin;
 let hex;
 let length;
-/* for (var i = 0; i < 3; i++) {
-    if (i == 0) {
-        dir[i] = new THREE.Vector3(1, 0, 0);
-        hex = 0xff0000;
-    } else if (i == 1) {
-        dir[i] = new THREE.Vector3(0, 1, 0);
-        hex = 0x0000ff;
-    } else {
-        dir[i] = new THREE.Vector3(0, 0, 1);
-        hex = 0x00ff00;
-    };
-    dir[i].normalize();
-    origin = new THREE.Vector3(0, 0, 0);
-    length = 10;
-    let arrowHelper = new THREE.ArrowHelper(dir[i], origin, length, hex);
-    scene.add(arrowHelper);
-    arrows[i] = arrowHelper;
-}; */
-
-/*function arrowset(object) {
-    for (var i = 0; i < 3; i++) {
-        arrows[i].position.copy(object.position)
-    }
-    arrows[1].quaternion.set(object.quaternion.x, object.quaternion.y, object.quaternion.z, object.quaternion.w);
-    arrows[0].quaternion.multiplyQuaternions(arrows[1].quaternion, new THREE.Quaternion(1, 0, 0, 1).normalize());
-    arrows[2].quaternion.multiplyQuaternions(arrows[1].quaternion, new THREE.Quaternion(0, 0, 1, 1).normalize());
-};*/
-
 //object picking
 let selected;
 const raycaster = new THREE.Raycaster();
@@ -395,7 +352,7 @@ let cannondata = [];
 let exportdata1 = [];
 const tempbox = 'box' + Math.round(Math.random() * 10000000);
 exportdata[0] = ['let ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); '];
-function newcannon(box, position, size) {
+function newcannon(box, position, size, boxname) {
     if (box.geometry.constructor == THREE.BoxGeometry) {
         const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
         cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Box(v3(' + size[0] / 2, size[1] / 2, size[2] / 2 + ')); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
@@ -413,12 +370,13 @@ function newcannon(box, position, size) {
 function exportdata() {
     cannondata = [];
     exportdata1 = [];
-    exportdata1[0] = ['let ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); ']
+    let boxname = window.prompt('hitbox name (cannot be the same name as another hitbox)');
+    exportdata1[0] = ['function '+boxname+'(){let ' + tempbox + ' = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); ']
     for (var i = 0; i < hitboxnum.length; i++) {
         newcannon(exportvalues[i * 2], 0, exportvalues[i * 2 + 1]);
         exportdata1[0] = [exportdata1[0] + cannondata[cannondata.length - 1]];
     }
-    exportdata1[0] = [exportdata1[0] + 'world.addBody('+tempbox+');'];
+    exportdata1[0] = [exportdata1[0] + 'world.addBody('+tempbox+'); return '+boxname+';}'];
     navigator.clipboard.writeText(exportdata1[0]);
 }
 
@@ -428,22 +386,9 @@ function poscopy(a, b) {
     a.quaternion.copy(b.quaternion);
 };
 
-function positionsetter() {
-    poscopy(planeb, planea);
-    if (hitboxmesh && box12) {
-        poscopy(hitboxmesh, box12);
-    }
-    /* if (hit2 && hit != scene.children[gone]) {
-         arrowset(hit2.object);
-     } else {
-         arrowset(gone)
-     }*/
-};
-
 function render() {
     delta = Math.min(clock.getDelta(), 0.1);
     world.step(delta);
-    positionsetter();
     mover();
     requestAnimationFrame(render);
     renderer.render(scene, camera);

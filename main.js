@@ -178,11 +178,13 @@ rollbody.angularDamping = restraint;
 world.addBody(rollbody);
 
 //main objects
+function monkeybox() {let box1302571 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape645426 = new CANNON.Sphere(1.875); box1302571.addShape(shape645426, v3(0,1.4500000000000006,-0.65), q4(0,0,0,1)); const shape6531925 = new CANNON.Box(v3(1.5,2.5,1)); box1302571.addShape(shape6531925, v3(0,-2.25,2.6499999999999986), q4(-6.938893903907228e-18,0,0,1)); const shape3674056 = new CANNON.Box(v3(1.75,1.375,0.5)); box1302571.addShape(shape3674056, v3(-4.799999999999991,0.8500000000000001,-1.9000000000000088), q4(0.03031364357631054,-0.17144890372772567,-0.17144890372772567,0.9696863564236894)); const shape2946292 = new CANNON.Box(v3(1.75,1.5,0.5)); box1302571.addShape(shape2946292, v3(5.349999999999989,0.8500000000000004,-2.000000000000001), q4(0.01983383807620987,0.19767681165408385,0.09784339500725571,0.975170327201816)); const shape3511336 = new CANNON.Box(v3(3,2.5,2)); box1302571.addShape(shape3511336, v3(0,1.2500000000000004,1.8500000000000008), q4(0,0,0,1)); world.addBody(box1302571); return box1302571;}
+
 //obj loader
 const loader = new THREE.OBJLoader();
 /*because I am working on a file:// url and cannot use a webserver, I have to encode the object file as a base 64 url 
-  and then decode it or CORS will stop me from loading it. Also I have to use three.js v1.60.1 and all plugins v 1.47.0 because
-  es modules are blocked.*/
+  and then decode it or CORS will stop me from loading it. Also I have to use three.js v1.60.1 and plugins ~v1.47.0 because
+  fetch() and file imports are blocked.*/
 function returnobj(x) {
     return ('data:@file/octet-stream;base64,' + btoa(x));
 };
@@ -292,15 +294,16 @@ enemy1b2.castShadow = true;
 enemy1b2.recieveShadow = true;
 enemy1a2.tr = enemy1b2;
 scene.add(enemy1b2);
+
 /*addObject params:
 object is the model name (the variable defined in the model)
-shape is the shape of the cannon object, might change later to allow multiple, probably not
-parameters1 is the cannon.js body params, ex: {mass: 10, collisionFilterGroup: 1, etc}
+hitbox is the hitbox name (exported from my hitbox maker, link in readme) 
 amount is the amount of objects
 positons is an array of vec3s that sets positions of each object, ex: [[1, 10, 30], [25, 15, 60], [-20, 40, -70]]
-example function: addObject(monkey_obj, new CANNON.Sphere(3), {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 2, [[Math.random() * 50, 20, Math.random() * 50], [Math.random() * 50, 20, Math.random() * 50]]);
+example function: addObject(monkey_obj, monkeybox, {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 4, [50, 50, 50], [Math.random() * 20, 12, -30]);
 */
-function addObject(object, box, parameters1, amount, positions) {
+
+function addObject(object, hitbox, amount, positions) {
     for (let i = 0; i < amount; i++) {
         if (object != 0) {
             loader.load(returnobj(object), function(item) {
@@ -310,65 +313,15 @@ function addObject(object, box, parameters1, amount, positions) {
                 item.scale.set(5, 5, 5);
                 objlist[objlist.length] = item;
                 //monkey hitbox
-                let box1302571 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape645426 = new CANNON.Sphere(1.875); box1302571.addShape(shape645426, v3(0,1.4500000000000006,-0.65), q4(0,0,0,1)); const shape6531925 = new CANNON.Box(v3(1.5,2.5,1)); box1302571.addShape(shape6531925, v3(0,-2.25,2.6499999999999986), q4(-6.938893903907228e-18,0,0,1)); const shape3674056 = new CANNON.Box(v3(1.75,1.375,0.5)); box1302571.addShape(shape3674056, v3(-4.799999999999991,0.8500000000000001,-1.9000000000000088), q4(0.03031364357631054,-0.17144890372772567,-0.17144890372772567,0.9696863564236894)); const shape2946292 = new CANNON.Box(v3(1.75,1.5,0.5)); box1302571.addShape(shape2946292, v3(5.349999999999989,0.8500000000000004,-2.000000000000001), q4(0.01983383807620987,0.19767681165408385,0.09784339500725571,0.975170327201816)); const shape3511336 = new CANNON.Box(v3(3,2.5,2)); box1302571.addShape(shape3511336, v3(0,1.2500000000000004,1.8500000000000008), q4(0,0,0,1)); world.addBody(box1302571);
-                box1302571.position.set(positions[i][0], positions[i][1], positions[i][2]);
-                objlistc[objlistc.length] = box1302571;
-                world.addBody(box1302571);
+                objlistc[objlistc.length] = hitbox();
+                objlistc[objlistc.length - 1].position.set(positions[i][0], positions[i][1], positions[i][2]);
             });
         }
     }
 }
 
-/* unused because trimeshes don't work for collision with non spheres but I'm not gonna delete it yet
-var mmt = [];
-var mmt2 = []
-    for (var i = 0; i < 507; i++) {
-      mmt[mmt.length] = modelverts(monkey_obj, i, 0);
-      mmt[mmt.length] = modelverts(monkey_obj, i, 1);
-      mmt[mmt.length] = modelverts(monkey_obj, i, 2);
-    };
-    for (var i = 0; i < 965; i++) {
-     mmt2[mmt2.length] = modelfaces(monkey_obj, i, 0);
-     mmt2[mmt2.length] = modelfaces(monkey_obj, i, 1);
-     mmt2[mmt2.length] = modelfaces(monkey_obj, i, 2);
-    };
-
-  var shape22 = new CANNON.Trimesh(mmt, mmt2);
-  var shape23 = new CANNON.Body({mass: 15, collisionFilterGroup: 1, collisionFilterMask: -1});
-  shape23.addShape(shape22);
-  shape23.scale = new CANNON.Vec3(10, 10, 10);
-  shape23.position.y = 5;
-  shape23.position.z = 20;
-  world.addBody(shape23);
-
-//get model vertexes
-function modelverts(object, i, y) {
-  if (y == -1) {
-  return((object.split('\n').filter(line => line.startsWith('v ')))[i].replace(/v /, '')).replace(/ /g, ', ');
-  } else {
-    let verts = (object.split('\n').filter(line => line.startsWith('v ')))[i].replace(/v /, '');
-    let att = verts.split(' ');
-    return att[y];
-  }
-}
-function modelfaces(object, i, y) {
-  if (!y) {
-  return((object.split('\n').filter(line => line.startsWith('f ')))[i].replace(/f /, '')).replace(/ /g, ', ');
-  } else {
-    let verts = (object.split('\n').filter(line => line.startsWith('f ')))[i].replace(/f /, '');
-    let verts1 = verts.replace(/[1234567890]+[/][/]/g, '');
-    let att = verts1.split(' ');
-    return att[y];
-  }
-}
-  */
-
 for (let h = 0; h < 20; h++) {
-    addObject(monkey_obj, new CANNON.Sphere(3), {
-        mass: 1,
-        collisionFilterGroup: 1,
-        collisionFilterMask: -1
-    }, 1, [
+    addObject(monkey_obj, monkeybox, 1, [
         [Math.random() * 200, 20, Math.random() * 200],
         [Math.random() * 200, 20, Math.random() * 200]
     ]);
