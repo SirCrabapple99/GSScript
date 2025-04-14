@@ -52,7 +52,7 @@ document.addEventListener("pointermove", mousemovement);
 document.addEventListener("mousedown", three_raycast);
 
 //input
-var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, "u", 0, "o", 0, "t", 0, "g", 0, "f", 0, "h", 0, "z"];
+var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift", 0, "ArrowUp", 0, "ArrowDown", 0, "ArrowLeft", 0, "ArrowRight", 0, "i", 0, "k", 0, "j", 0, "l", 0, ".", 0, "/", 0, "t", 0, "g", 0, "f", 0, "h", 0, "z", 0, "u", 0, "o"];
 
 let localr = -1
 
@@ -135,14 +135,14 @@ function mover() {
     };
     if (keystatus[26] == 1 && hit2) {
         if (localr == 1) {
-            hit2.object.rotateX(0.05);
+            hit2.object.rotateX(-0.05);
         } else {
             hit2.object.rotation.x -= 0.05;
         }
     };
     if (keystatus[28] == 1 && hit2) {
         if (localr == 1) {
-            hit2.object.rotateX(-0.05);
+            hit2.object.rotateX(0.05);
         } else {
             hit2.object.rotation.x += 0.05;
         }
@@ -186,6 +186,20 @@ function mover() {
     };
     if (keystatus[44] == 1) {
         camera.rotation.y -= 0.01;
+    };
+    if (keystatus[48] == 1) {
+        if (localr == 1) {
+            hit2.object.rotateY(0.05);
+        } else {
+            hit2.object.rotation.y -= 0.05;
+        }
+    };
+    if (keystatus[50] == 1) {
+        if (localr == 1) {
+            hit2.object.rotateY(-0.05);
+        } else {
+            hit2.object.rotation.y += 0.05;
+        }
     };
     if (keystatus[14] == 1 && hit2) {
         hit2.object.position.x = 0;
