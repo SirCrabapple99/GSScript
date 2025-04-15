@@ -1,6 +1,11 @@
 //js
 var etoggle = -1;
 
+function poscopy(a, b) {
+    a.position.copy(b.position);
+    a.quaternion.copy(b.quaternion);
+}
+
 function v3(x, y, z) {
     return (new CANNON.Vec3(x, y, z));
 };
@@ -24,7 +29,7 @@ let speed = 4;
 //jump height
 let jump = 22;
 //max object pickup distance
-let pickuprange = 60;
+let pickuprange = 40;
 //player strength (object move speed)
 let strength = 3;
 //angular damping
@@ -175,9 +180,39 @@ rollbody.position.set(0, 10, 30);
 rollbody.angularDamping = restraint;
 world.addBody(rollbody);
 
+//materials
+const orangemat = new THREE.MeshPhysicalMaterial({
+    color: 0xff4f00
+});
+const purplemat = new THREE.MeshPhysicalMaterial({
+    color: 0xa020f0
+});
+const redmat = new THREE.MeshPhysicalMaterial({
+    color: 0xaff0000
+});
+const orangematshiny = new THREE.MeshPhysicalMaterial({
+    color: 0xff4f00,
+    roughness: 0.25,
+    metalness: 0.75
+});
+const purplematshiny = new THREE.MeshPhysicalMaterial({
+    color: 0xa020f0,
+    roughness: 0.25,
+    metalness: 0.75
+});
+const redmatshiny = new THREE.MeshPhysicalMaterial({
+    color: 0xff0000,
+    roughness: 0.25,
+    metalness: 0.75
+});
+
+let terrainlist = [];
+let modelloaded = [];
 //main objects
 function monkeybox(){let box1302571 = new CANNON.Body({mass: 50, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape645426 = new CANNON.Sphere(1.875); box1302571.addShape(shape645426, v3(0,1.4500000000000006,-0.65), q4(0,0,0,1)); const shape6531925 = new CANNON.Box(v3(1.5,2.5,1)); box1302571.addShape(shape6531925, v3(0,-2.25,2.6499999999999986), q4(-6.938893903907228e-18,0,0,1)); const shape3674056 = new CANNON.Box(v3(1.75,1.375,0.5)); box1302571.addShape(shape3674056, v3(-4.799999999999991,0.8500000000000001,-1.9000000000000088), q4(0.03031364357631054,-0.17144890372772567,-0.17144890372772567,0.9696863564236894)); const shape2946292 = new CANNON.Box(v3(1.75,1.5,0.5)); box1302571.addShape(shape2946292, v3(5.349999999999989,0.8500000000000004,-2.000000000000001), q4(0.01983383807620987,0.19767681165408385,0.09784339500725571,0.975170327201816)); const shape3511336 = new CANNON.Box(v3(3,2.5,2)); box1302571.addShape(shape3511336, v3(0,1.2500000000000004,1.8500000000000008), q4(0,0,0,1)); world.addBody(box1302571); return box1302571;}
 function enemy1box(){let box469612 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape2867977 = new CANNON.Cylinder(3.5,0.5,5,16); box469612.addShape(shape2867977, v3(0,0,0), q4(0,0,0,1)); world.addBody(box469612); return box469612;}
+function boxx(){let box7260949 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFilterMask: -1}); const shape2199418 = new CANNON.Box(v3(2.5,2.5,2.5)); box7260949.addShape(shape2199418, v3(0,0,0), q4(0,0,0,1)); let threeshape1402843 = new THREE.BoxGeometry(5,5,5); let threebox8331594 = new THREE.Mesh(threeshape1402843, redmat); scene.add(threebox8331594); threebox8331594.quaternion.x = 0; threebox8331594.quaternion.y = 0; threebox8331594.quaternion.z = 0; threebox8331594.quaternion.w = 1; threebox8331594.quaternion.normalize(); threebox8331594.position.x = 0; threebox8331594.position.y = 0; threebox8331594.position.z = 0; const shape2158333 = new CANNON.Box(v3(1,5,1)); box7260949.addShape(shape2158333, v3(0,0,0), q4(0,0,0,1)); let threeshape9479435 = new THREE.BoxGeometry(2,10,2); let threebox6892020 = new THREE.Mesh(threeshape9479435, redmat); scene.add(threebox6892020); threebox6892020.quaternion.x = 0; threebox6892020.quaternion.y = 0; threebox6892020.quaternion.z = 0; threebox6892020.quaternion.w = 1; threebox6892020.quaternion.normalize(); threebox6892020.position.x = 0; threebox6892020.position.y = 0; threebox6892020.position.z = 0; world.addBody(box7260949); return box7260949;}
+boxx();
 //obj loader
 const loader = new THREE.OBJLoader();
 /*because I am working on a file:// url and cannot use a webserver, I have to encode the object file as a base 64 url 
@@ -221,32 +256,6 @@ for (let h = 0; h < 20; h++) {
     ]);
 }
 
-let modelloaded = [];
-//materials
-const orangemat = new THREE.MeshPhysicalMaterial({
-    color: 0xff4f00
-});
-const purplemat = new THREE.MeshPhysicalMaterial({
-    color: 0xa020f0
-});
-const redmat = new THREE.MeshPhysicalMaterial({
-    color: 0xaff0000
-});
-const orangematshiny = new THREE.MeshPhysicalMaterial({
-    color: 0xff4f00,
-    roughness: 0.25,
-    metalness: 0.75
-});
-const purplematshiny = new THREE.MeshPhysicalMaterial({
-    color: 0xa020f0,
-    roughness: 0.25,
-    metalness: 0.75
-});
-const redmatshiny = new THREE.MeshPhysicalMaterial({
-    color: 0xff0000,
-    roughness: 0.25,
-    metalness: 0.75
-});
 /*guide on groups and masks
   all groups have to be the next exponent of 2 (2^2, 2^3, etc.)
   group 1 is for objects that can be picked up/general physics objects. Only able to be jumped on if touching an object in group 2
@@ -256,6 +265,7 @@ const redmatshiny = new THREE.MeshPhysicalMaterial({
   group 16 is for enemys
 */
 //ramp 1
+
 const ramp1a = new CANNON.Box(new CANNON.Vec3(25, 5, 25));
 const ramp1a2 = new CANNON.Body({
     mass: 0,
@@ -304,7 +314,7 @@ cubeBody.nameg = "Test Cube";
 const sphere2a = new CANNON.Sphere(5);
 cubeBody.addShape(cubeShape)
 
-cubeBody.position.set(0, -10, 0);
+cubeBody.position.set(50, -10, 0);
 world.addBody(cubeBody);
 //enemy test
 const enemy1a = new CANNON.Cylinder(6, 6, 10, 24);
@@ -324,11 +334,6 @@ enemy1b2.castShadow = true;
 enemy1b2.recieveShadow = true;
 enemy1a2.tr = enemy1b2;
 scene.add(enemy1b2);
-
-function poscopy(a, b) {
-    a.position.copy(b.position);
-    a.quaternion.copy(b.quaternion);
-}
 
 function positionsetter() {
     poscopy(enemy1b2, enemy1a2);
