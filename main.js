@@ -176,8 +176,8 @@ rollbody.angularDamping = restraint;
 world.addBody(rollbody);
 
 //main objects
-function monkeybox() {let box1302571 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape645426 = new CANNON.Sphere(1.875); box1302571.addShape(shape645426, v3(0,1.4500000000000006,-0.65), q4(0,0,0,1)); const shape6531925 = new CANNON.Box(v3(1.5,2.5,1)); box1302571.addShape(shape6531925, v3(0,-2.25,2.6499999999999986), q4(-6.938893903907228e-18,0,0,1)); const shape3674056 = new CANNON.Box(v3(1.75,1.375,0.5)); box1302571.addShape(shape3674056, v3(-4.799999999999991,0.8500000000000001,-1.9000000000000088), q4(0.03031364357631054,-0.17144890372772567,-0.17144890372772567,0.9696863564236894)); const shape2946292 = new CANNON.Box(v3(1.75,1.5,0.5)); box1302571.addShape(shape2946292, v3(5.349999999999989,0.8500000000000004,-2.000000000000001), q4(0.01983383807620987,0.19767681165408385,0.09784339500725571,0.975170327201816)); const shape3511336 = new CANNON.Box(v3(3,2.5,2)); box1302571.addShape(shape3511336, v3(0,1.2500000000000004,1.8500000000000008), q4(0,0,0,1)); world.addBody(box1302571); return box1302571;}
-
+function monkeybox(){let box1302571 = new CANNON.Body({mass: 50, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape645426 = new CANNON.Sphere(1.875); box1302571.addShape(shape645426, v3(0,1.4500000000000006,-0.65), q4(0,0,0,1)); const shape6531925 = new CANNON.Box(v3(1.5,2.5,1)); box1302571.addShape(shape6531925, v3(0,-2.25,2.6499999999999986), q4(-6.938893903907228e-18,0,0,1)); const shape3674056 = new CANNON.Box(v3(1.75,1.375,0.5)); box1302571.addShape(shape3674056, v3(-4.799999999999991,0.8500000000000001,-1.9000000000000088), q4(0.03031364357631054,-0.17144890372772567,-0.17144890372772567,0.9696863564236894)); const shape2946292 = new CANNON.Box(v3(1.75,1.5,0.5)); box1302571.addShape(shape2946292, v3(5.349999999999989,0.8500000000000004,-2.000000000000001), q4(0.01983383807620987,0.19767681165408385,0.09784339500725571,0.975170327201816)); const shape3511336 = new CANNON.Box(v3(3,2.5,2)); box1302571.addShape(shape3511336, v3(0,1.2500000000000004,1.8500000000000008), q4(0,0,0,1)); world.addBody(box1302571); return box1302571;}
+function enemy1box(){let box469612 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape2867977 = new CANNON.Cylinder(3.5,0.5,5,16); box469612.addShape(shape2867977, v3(0,0,0), q4(0,0,0,1)); world.addBody(box469612); return box469612;}
 //obj loader
 const loader = new THREE.OBJLoader();
 /*because I am working on a file:// url and cannot use a webserver, I have to encode the object file as a base 64 url 
@@ -189,6 +189,38 @@ function returnobj(x) {
 //names of all the models so they can have their postion updated
 let objlist = []
 let objlistc = []
+//actual model loading part
+/*addObject params:
+object is the model name (the variable defined in the model)
+hitbox is the hitbox name (exported from my hitbox maker, link in readme) 
+amount is the amount of objects
+positons is an array of vec3s that sets positions of each object, ex: [[1, 10, 30], [25, 15, 60], [-20, 40, -70]]
+example function: addObject(monkey_obj, monkeybox, {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 4, [50, 50, 50], [Math.random() * 20, 12, -30]);
+*/
+function addObject(object, hitbox, amount, positions) {
+    for (let i = 0; i < amount; i++) {
+        if (object != 0) {
+            loader.load(returnobj(object), function(item) {
+                scene.add(item);
+                item.name = 'obj' + objlist.length;
+                item.castShadow = true;
+                item.scale.set(5, 5, 5);
+                objlist[objlist.length] = item;
+                //monkey hitbox
+                objlistc[objlistc.length] = hitbox();
+                objlistc[objlistc.length - 1].position.set(positions[i][0], positions[i][1], positions[i][2]);
+            });
+        }
+    }
+}
+
+for (let h = 0; h < 20; h++) {
+    addObject(monkey_obj, monkeybox, 1, [
+        [Math.random() * 200, 20, Math.random() * 200],
+        [Math.random() * 200, 20, Math.random() * 200]
+    ]);
+}
+
 let modelloaded = [];
 //materials
 const orangemat = new THREE.MeshPhysicalMaterial({
@@ -292,38 +324,6 @@ enemy1b2.castShadow = true;
 enemy1b2.recieveShadow = true;
 enemy1a2.tr = enemy1b2;
 scene.add(enemy1b2);
-
-/*addObject params:
-object is the model name (the variable defined in the model)
-hitbox is the hitbox name (exported from my hitbox maker, link in readme) 
-amount is the amount of objects
-positons is an array of vec3s that sets positions of each object, ex: [[1, 10, 30], [25, 15, 60], [-20, 40, -70]]
-example function: addObject(monkey_obj, monkeybox, {mass: 1, collisionFilterGroup: 1, collisionFilterMask: -1}, 4, [50, 50, 50], [Math.random() * 20, 12, -30]);
-*/
-
-function addObject(object, hitbox, amount, positions) {
-    for (let i = 0; i < amount; i++) {
-        if (object != 0) {
-            loader.load(returnobj(object), function(item) {
-                scene.add(item);
-                item.name = 'obj' + objlist.length;
-                item.castShadow = true;
-                item.scale.set(5, 5, 5);
-                objlist[objlist.length] = item;
-                //monkey hitbox
-                objlistc[objlistc.length] = hitbox();
-                objlistc[objlistc.length - 1].position.set(positions[i][0], positions[i][1], positions[i][2]);
-            });
-        }
-    }
-}
-
-for (let h = 0; h < 20; h++) {
-    addObject(monkey_obj, monkeybox, 1, [
-        [Math.random() * 200, 20, Math.random() * 200],
-        [Math.random() * 200, 20, Math.random() * 200]
-    ]);
-}
 
 function poscopy(a, b) {
     a.position.copy(b.position);
