@@ -216,8 +216,8 @@ function returnobj(x) {
     return ('data:@file/octet-stream;base64,' + btoa(x));
 };
 //names of all the models so they can have their postion updated
-let objlist = []
-let objlistc = []
+let objlist = [];
+let objlistc = [];
 //actual model loading part
 /*addObject params:
 object is the model name (the variable defined in the model)
@@ -312,24 +312,6 @@ cubeBody.addShape(cubeShape)
 
 cubeBody.position.set(0, -10, 30);
 world.addBody(cubeBody);
-//enemy test
-const enemy1a = new CANNON.Cylinder(6, 6, 10, 24);
-const enemy1a2 = new CANNON.Body({
-    mass: 10,
-    collisionFilterGroup: 16,
-    collisionFilterMask: -1
-});
-enemy1a2.addShape(enemy1a);
-enemy1a2.position.set(-20, 0, 0);
-enemy1a2.hp = 100;
-world.addBody(enemy1a2);
-
-const enemy1b = new THREE.CylinderGeometry(6, 6, 10, 24, 8);
-const enemy1b2 = new THREE.Mesh(enemy1b, redmat);
-enemy1b2.castShadow = true;
-enemy1b2.recieveShadow = true;
-enemy1a2.tr = enemy1b2;
-scene.add(enemy1b2);
 
 function poscopy(a, b) {
     a.position.copy(b.position);
@@ -337,7 +319,6 @@ function poscopy(a, b) {
 }
 
 function positionsetter() {
-    poscopy(enemy1b2, enemy1a2);
     poscopy(sphere1b2, sphere1a2);
     camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
     poscopy(cube, cubeBody);
@@ -481,6 +462,10 @@ function mover() {
     playerbody.position.z = rollbody.position.z;
     playerbody.position.y = rollbody.position.y + 10;
 }
+
+//enemys
+function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; return box1756912;}
+addObject(enemy1base_obj, enemy1base, 1, [[10, 50, 0]]);
 //shooting
 function shoot() {
     var sobj = new CANNON.RaycastResult();
@@ -488,10 +473,13 @@ function shoot() {
         collisionFilterMask: 16,
         collisionFilterGroup: 32
     }, sobj);
-    sobj.body.hp -= 20;
-    if (sobj.body.hp <= 0) {
+    if (sobj.body.health) {
+    sobj.body.health -= 20;
+    sobj.body.applyImpulse(v3(camdir.x * 20/sobj.body.mass, camdir.y * 20/sobj.body.mass, camdir.z * 20/sobj.body.mass), v3(0, 0, 0))
+    if (sobj.body.health <= 0) {
         world.removeBody(sobj.body);
-        scene.remove(sobj.body.tr);
+        scene.remove(objlist[objlistc.indexOf(sobj.body)]);
+    }
     }
 }
 //render
