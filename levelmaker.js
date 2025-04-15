@@ -223,7 +223,10 @@ const whitemat = new THREE.MeshPhysicalMaterial({
 });
 
 //scene objects
-
+const planea = new THREE.BoxGeometry(1000, 1, 1000);
+const planeb = new THREE.Mesh(planea, modelmat);
+planeb.position.y = -20;
+scene.add(planeb);
 //selection hider
 const gone1 = new THREE.BoxGeometry(5, 5, 5);
 const gone = new THREE.Mesh(gone1, whitemat);
@@ -355,7 +358,7 @@ function exportdata() {
         newcannon(exportvalues[i * 2], 0, exportvalues[i * 2 + 1]);
         exportdata1[0] = [exportdata1[0] + cannondata[cannondata.length - 1]];
     }
-    exportdata1[0] = [exportdata1[0] + 'world.addBody('+tempbox+'); return '+tempbox+';}'];
+    exportdata1[0] = [exportdata1[0] + 'world.addBody('+tempbox+');}'];
     navigator.clipboard.writeText(exportdata1[0]);
 }
 
