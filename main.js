@@ -310,7 +310,7 @@ cubeBody.nameg = "Test Cube";
 const sphere2a = new CANNON.Sphere(5);
 cubeBody.addShape(cubeShape)
 
-cubeBody.position.set(30, -10, 0);
+cubeBody.position.set(0, -10, 30);
 world.addBody(cubeBody);
 //enemy test
 const enemy1a = new CANNON.Cylinder(6, 6, 10, 24);
