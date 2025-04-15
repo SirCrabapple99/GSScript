@@ -263,7 +263,7 @@ function addObject(object, amount, positions) {
     }
 }
 
-addObject(enemy1base_obj, 1, [[0, 0, 0]]);
+addObject(monkey_obj, 1, [[0, 0, 0]]);
 
 //object selecting
 let dir = [];
