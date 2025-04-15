@@ -467,6 +467,10 @@ function mover() {
 function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; return box1756912;}
 addObject(enemy1base_obj, enemy1base, 1, [[10, 50, 0]]);
 //shooting
+//name, damage, model
+let g1_obj
+var weplist = [["g1", 10, g1_obj]];
+var wep = 0;
 function shoot() {
     var sobj = new CANNON.RaycastResult();
     world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {
@@ -474,8 +478,8 @@ function shoot() {
         collisionFilterGroup: 32
     }, sobj);
     if (sobj.body.health) {
-    sobj.body.health -= 20;
-    sobj.body.applyImpulse(v3(camdir.x * 20/sobj.body.mass, camdir.y * 20/sobj.body.mass, camdir.z * 20/sobj.body.mass), v3(0, 0, 0))
+    sobj.body.health -= weplist[wep][1];
+    sobj.body.applyImpulse(v3(camdir.x * weplist[wep][1]/(sobj.body.mass/2), camdir.y * weplist[wep][1]/(sobj.body.mass/2), camdir.z * weplist[wep][1]/(sobj.body.mass/2)), v3(0, 0, 0))
     if (sobj.body.health <= 0) {
         world.removeBody(sobj.body);
         scene.remove(objlist[objlistc.indexOf(sobj.body)]);
