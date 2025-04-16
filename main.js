@@ -79,7 +79,7 @@ var slippery_ground_cm = new CANNON.ContactMaterial(groundMaterial, slipperyMate
 // We must add the contact materials to the world
 world.addContactMaterial(slippery_ground_cm);
 //plane
-const planeShape = new CANNON.Box(new CANNON.Vec3(500, 0.5, 500));
+const planeShape = new CANNON.Box(v3(500, 0.5, 500));
 const planeBody = new CANNON.Body({
     mass: 0,
     material: groundMaterial,
@@ -260,7 +260,7 @@ for (let h = 0; h < 20; h++) {
 */
 //ramp 1
 
-const ramp1a = new CANNON.Box(new CANNON.Vec3(25, 5, 25));
+const ramp1a = new CANNON.Box(v3(25, 5, 25));
 const ramp1a2 = new CANNON.Body({
     mass: 0,
     collisionFilterGroup: 2,
@@ -300,7 +300,7 @@ sphere1b2.castShadow = true;
 sphere1b2.recieveShadow = true;
 scene.add(sphere1b2);
 //cube 1
-const cubeShape = new CANNON.Box(new CANNON.Vec3(5, 5, 5));
+const cubeShape = new CANNON.Box(v3(5, 5, 5));
 const cubeBody = new CANNON.Body({
     mass: 10,
     collisionFilterGroup: 1,
@@ -326,6 +326,17 @@ function positionsetter() {
     for (var i = 0; i < objlist.length; i++) {
         if (scene.getObjectByName('obj' + i)) {
             poscopy(objlist[i], objlistc[i]);
+        }
+    }
+    for (var i = 0; i < enemylist.length; i++) {
+        if (scene.getObjectByName('obj' + i)) {
+            enemylist[i][1].position.copy(enemylist[i][0].position);
+            if (enemylist[i][2]) {
+                enemylist[i][1].position.x += enemylist[i][2][0];
+                enemylist[i][1].position.y += enemylist[i][2][1];
+                enemylist[i][1].position.z += enemylist[i][2][2];
+            }
+            track(i);
         }
     }
 }
@@ -374,8 +385,8 @@ function bodiesAreInContact(obj, group, y) {
 }
 //picking up stuff
 //check for max object hold distance
-function gdistance(p) {
-    if (Math.abs(playerbody.position.x) - Math.abs(p.position.x) <= pickuprange && Math.abs(playerbody.position.y) - Math.abs(p.position.y) <= pickuprange && Math.abs(playerbody.position.z) - Math.abs(p.position.z) <= pickuprange && Math.abs(playerbody.position.x) - Math.abs(p.position.x) >= pickuprange * -1 && Math.abs(playerbody.position.y) - Math.abs(p.position.y) >= pickuprange * -1 && Math.abs(playerbody.position.z) - Math.abs(p.position.z) >= pickuprange * -1) {
+function gdistance(p, r) {
+    if (Math.abs(playerbody.position.x) - Math.abs(p.position.x) <= r && Math.abs(playerbody.position.y) - Math.abs(p.position.y) <= r && Math.abs(playerbody.position.z) - Math.abs(p.position.z) <= r && Math.abs(playerbody.position.x) - Math.abs(p.position.x) >= r * -1 && Math.abs(playerbody.position.y) - Math.abs(p.position.y) >= r * -1 && Math.abs(playerbody.position.z) - Math.abs(p.position.z) >= r * -1) {
         return true
     } else {
         return false
@@ -386,7 +397,7 @@ var pobj = new CANNON.RaycastResult
 
 function pickup() {
     if (etoggle == 1) {
-        if (pobj.body != null && gdistance(pobj.body) == true) {
+        if (pobj.body != null && gdistance(pobj.body, pickuprange) == true) {
             pobj.body.velocity.x = ((playerbody.position.x - pobj.body.position.x + 5 * camdir.x) / (pobj.body.mass / 7)) * strength;
             pobj.body.velocity.y = ((playerbody.position.y - pobj.body.position.y + 5 * camdir.y) / (pobj.body.mass / 7)) * strength;
             pobj.body.velocity.z = ((playerbody.position.z - pobj.body.position.z + 5 * camdir.z) / (pobj.body.mass / 7)) * strength;
@@ -394,7 +405,7 @@ function pickup() {
             etoggle = -1
         }
     } else {
-        world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {
+        world.raycastClosest(v3(camera.position.x, camera.position.y, camera.position.z), v3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {
             collisionFilterMask: 1,
             collisionFilterGroup: 32
         }, pobj);
@@ -464,7 +475,8 @@ function mover() {
 }
 
 //enemys
-function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; return box1756912;}
+var enemylist = [];
+function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; box1756912.maxdist = 40; enemylist[enemylist.length] = [box1756912]; let enemy2head = new THREE.BoxGeometry(10, 6, 10); let enemy1head2 = new THREE.Mesh(enemy2head, orangematshiny); scene.add(enemy1head2); enemy1head2.name = 'obj' + enemylist.length; enemylist[enemylist.length - 1][1] = enemy1head2; enemylist[enemylist.length - 1][2] = [0, 10, 0]; return box1756912;}
 addObject(enemy1base_obj, enemy1base, 1, [[10, 50, 0]]);
 //shooting
 //name, damage, model
@@ -473,33 +485,42 @@ var weplist = [["g1", 10, g1_obj]];
 var wep = 0;
 function shoot() {
     var sobj = new CANNON.RaycastResult();
-    world.raycastClosest(new CANNON.Vec3(camera.position.x, camera.position.y, camera.position.z), new CANNON.Vec3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {
+    world.raycastClosest(v3(camera.position.x, camera.position.y, camera.position.z), v3(camera.position.x + camdir.x * 100, camera.position.y + camdir.y * 100, camera.position.z + camdir.z * 100), {
         collisionFilterMask: 16,
         collisionFilterGroup: 32
     }, sobj);
     if (sobj.body.health) {
     sobj.body.health -= weplist[wep][1];
-    sobj.body.applyImpulse(v3(camdir.x * weplist[wep][1]/(sobj.body.mass/2), camdir.y * weplist[wep][1]/(sobj.body.mass/2), camdir.z * weplist[wep][1]/(sobj.body.mass/2)), v3(0, 0, 0))
+    sobj.body.applyImpulse(v3(camdir.x * weplist[wep][1]/(sobj.body.mass/1.5), camdir.y * weplist[wep][1]/(sobj.body.mass/1.5), camdir.z * weplist[wep][1]/(sobj.body.mass/1.5)), v3(0, 0, 0))
     if (sobj.body.health <= 0) {
         world.removeBody(sobj.body);
         scene.remove(objlist[objlistc.indexOf(sobj.body)]);
     }
     }
 }
-//render
 
-let t = 0;
+function enemyshoot(enemy) {
+    
+}
+
+const target1 = new THREE.Object3D();
+function track(i) {
+    if (gdistance(enemylist[i][1], enemylist[i][0].maxdist) == true) {
+        poscopy(target1, enemylist[i][1]);
+        target1.lookAt(camera.position);
+        enemylist[i][1].quaternion.slerp(target1.quaternion, 0.1);
+    }
+}
+
+
+//render
 function render() {
     positionsetter();
     delta = Math.min(clock.getDelta(), 0.1);
-    world.step(delta);
-
     mover();
-
-    t += delta;
+    world.step(delta);
     world.step(delta);
     requestAnimationFrame(render);
-
     // Get and print the rigid-body's position.
     renderer.render(scene, camera);
 }
