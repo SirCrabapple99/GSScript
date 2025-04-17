@@ -159,6 +159,7 @@ const playerbody = new CANNON.Body({
 });
 playerbody.addShape(playershape);
 playerbody.position.set(0, 10, 30);
+playerbody.health = 150;
 playerbody.linearDamping = restraint;
 world.addBody(playerbody);
 
@@ -476,7 +477,7 @@ function mover() {
 
 //enemys
 var enemylist = [];
-function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; box1756912.maxdist = 100; enemylist[enemylist.length] = [box1756912]; let enemy2head = new THREE.BoxGeometry(10, 6, 10); let enemy1head2 = new THREE.Mesh(enemy2head, orangematshiny); scene.add(enemy1head2); enemy1head2.name = 'obj' + enemylist.length; enemylist[enemylist.length - 1][1] = enemy1head2; enemylist[enemylist.length - 1][2] = [0, 10, 0]; return box1756912;}
+function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; box1756912.maxdist = 100; enemylist[enemylist.length] = [box1756912]; let enemy2head = new THREE.BoxGeometry(10, 6, 10); let enemy1head2 = new THREE.Mesh(enemy2head, orangematshiny); scene.add(enemy1head2); enemy1head2.name = 'obj' + enemylist.length; enemylist[enemylist.length - 1][1] = enemy1head2; enemylist[enemylist.length - 1][2] = [0, 10, 0]; enemylist[enemylist.length - 1][1].damage = 10; return box1756912;}
 addObject(enemy1base_obj, enemy1base, 1, [[10, 50, 0]]);
 //shooting
 //name, damage, model
@@ -504,16 +505,33 @@ function shoot() {
     }
 }
 
-function enemyshoot(enemy) {
-    
+function enemyshoot(enemy, i) {
+    enemylist[i][3] = 1;
+    setTimeout(() => {
+    var hitm = new CANNON.RaycastResult();
+    world.raycastClosest(v3(enemy.position.x, enemy.position.y, enemy.position.z), v3(playerbody.position.x, playerbody.position.y, playerbody.position.z), {
+        collisionFilterMask: 1 | 2 | 4,
+        collisionFilterGroup: -1
+    }, hitm);
+    if (hitm.body.collisionFilterGroup == 4 && enemylist[i][1].parent == scene) {
+        if (playerbody.health > 0) {
+            playerbody.health -= enemy.damage;
+            document.getElementById("health").innerHTML = Math.round(playerbody.health);
+        }
+    }
+    enemylist[i][3] = 0;
+    }, 3000);
 }
 
 const target1 = new THREE.Object3D();
 function track(i) {
-    if (gdistance(enemylist[i][1], enemylist[i][0].maxdist) == true) {
+    if (gdistance(enemylist[i][1], enemylist[i][0].maxdist) == true && enemylist[i][1].parent == scene) {
         poscopy(target1, enemylist[i][1]);
         target1.lookAt(camera.position);
         enemylist[i][1].quaternion.slerp(target1.quaternion, 0.1);
+        if (!(enemylist[i][3]) || enemylist[i][3] == 0) {
+            enemyshoot(enemylist[i][1], i)
+        }
     }
 }
 
