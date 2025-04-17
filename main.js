@@ -144,7 +144,7 @@ light.position.set(0, 15, 0);
 light.castShadow = true;
 scene.add(light);
 
-const amb = new THREE.AmbientLight(0x404040, 1);
+const amb = new THREE.AmbientLight(0x404040, 5);
 scene.add(amb);
 
 //player
@@ -476,11 +476,11 @@ function mover() {
 
 //enemys
 var enemylist = [];
-function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; box1756912.maxdist = 40; enemylist[enemylist.length] = [box1756912]; let enemy2head = new THREE.BoxGeometry(10, 6, 10); let enemy1head2 = new THREE.Mesh(enemy2head, orangematshiny); scene.add(enemy1head2); enemy1head2.name = 'obj' + enemylist.length; enemylist[enemylist.length - 1][1] = enemy1head2; enemylist[enemylist.length - 1][2] = [0, 10, 0]; return box1756912;}
+function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; box1756912.maxdist = 100; enemylist[enemylist.length] = [box1756912]; let enemy2head = new THREE.BoxGeometry(10, 6, 10); let enemy1head2 = new THREE.Mesh(enemy2head, orangematshiny); scene.add(enemy1head2); enemy1head2.name = 'obj' + enemylist.length; enemylist[enemylist.length - 1][1] = enemy1head2; enemylist[enemylist.length - 1][2] = [0, 10, 0]; return box1756912;}
 addObject(enemy1base_obj, enemy1base, 1, [[10, 50, 0]]);
 //shooting
 //name, damage, model
-let g1_obj
+let g1_obj;
 var weplist = [["g1", 10, g1_obj]];
 var wep = 0;
 function shoot() {
@@ -495,6 +495,11 @@ function shoot() {
     if (sobj.body.health <= 0) {
         world.removeBody(sobj.body);
         scene.remove(objlist[objlistc.indexOf(sobj.body)]);
+        for (let i = 0; i < enemylist.length; i++) {
+            if (enemylist[i][0] == sobj.body) {
+                scene.remove(enemylist[i][1]);
+            }
+        } 
     }
     }
 }
