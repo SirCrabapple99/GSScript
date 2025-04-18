@@ -253,6 +253,25 @@ function returnobj(x) {
     return ('data:@file/octet-stream;base64,' + btoa(x));
 };
 
+objlistc = []
+objlist = []
+function addObject(object, hitbox, amount, positions) {
+    for (let i = 0; i < amount; i++) {
+        if (object != 0) {
+            loader.load(returnobj(object), function(item) {
+                scene.add(item);
+                item.name = 'obj' + objlist.length;
+                item.castShadow = true;
+                item.scale.set(5, 5, 5);
+                objlist[objlist.length] = item;
+                //monkey hitbox
+                objlistc[objlistc.length] = hitbox();
+                objlistc[objlistc.length - 1].position.set(positions[i][0], positions[i][1], positions[i][2]);
+            });
+        }
+    }
+}
+
 //object selecting
 let dir = [];
 let origin;
@@ -293,7 +312,7 @@ function three_raycast() {
 //the important part
 //buttons
 function addbox() {
-    let boxtype = window.prompt("type of hitbox (box/sphere/cylinder)");
+    let boxtype = window.prompt("type (box/sphere/cylinder/enemy)");
     if ((new RegExp(/box/i)).test(boxtype)) {
         let boxprompt = JSON.parse('[' + window.prompt("box size: x, y, z") + ']');
         let posprompt1 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
@@ -309,12 +328,18 @@ function addbox() {
         let posprompt3 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
         let pos3 = new THREE.Vector3(posprompt3[0], posprompt3[1], posprompt3[2]);
         newhitbox(new THREE.CylinderGeometry(cylinderprompt[0], cylinderprompt[1], cylinderprompt[2], cylinderprompt[3]), pos3, [cylinderprompt[0], cylinderprompt[1], cylinderprompt[2], cylinderprompt[3]]);
+    } else if ((new RegExp(/enemy/i)).test(boxtype)) {
+        let nameprompt = JSON.parse('[' + window.prompt("hitbox model, hitbox function name") + ']');
+        let posprompt4 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
+        let pos4 = new THREE.Vector3(posprompt4[0], posprompt4[1], posprompt4[2]);
+        newenemy(nameprompt[0], nameprompt[1], pos4);
     } else {
         alert("not a valid hitbox type");
         return;
     }
 }
 
+function enemy1box(){let box469612 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape2867977 = new CANNON.Cylinder(3.5,0.5,5,16); box469612.addShape(shape2867977, v3(0,0,0), q4(0,0,0,1)); world.addBody(box469612); return box469612;};
 //hitbox creator
 let hitboxnum = [];
 let hitboxmesh;
@@ -333,6 +358,11 @@ function newhitbox(shape1, position, size) {
     hitboxmesh.position.copy(position);
     exportvalues[exportvalues.length] = hitboxmesh;
     exportvalues[exportvalues.length] = size;
+}
+
+function newenemy(hitbox_obj, hitbox, pos) {
+    addObject(hitbox_obj, hitbox, 1, pos);
+    cannondata[cannondata.length] = ['addObject('+hitbox_obj, hitbox+', 1, ['+pos+']); ']
 }
 
 //final output creation

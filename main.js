@@ -1,3 +1,59 @@
+//three init
+const WIDTH = window.innerWidth;
+const HEIGHT = window.innerHeight;
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+renderer.setSize(WIDTH, HEIGHT);
+renderer.setClearColor(0x000000, 1);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.getElementById("renderdiv").appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+
+const clock = new THREE.Clock();
+let delta;
+
+//camera
+const camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 10000);
+scene.add(camera);
+camera.position.set(0, 0, 20);
+
+//cannon init
+const world = new CANNON.World();
+world.gravity.set(0, -9.82, 0);
+var groundMaterial = new CANNON.Material("groundMaterial");
+
+//ground mats (mostly unused)
+// Adjust constraint equation parameters for ground/ground contact
+var ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
+    friction: 0.4,
+    restitution: 0.3,
+    contactEquationStiffness: 1e8,
+    contactEquationRelaxation: 3,
+    frictionEquationStiffness: 1e8,
+    frictionEquationRegularizationTime: 3,
+});
+
+// Add contact material to the world
+world.addContactMaterial(ground_ground_cm);
+// Create a slippery material (friction coefficient = 0.0)
+var slipperyMaterial = new CANNON.Material("slipperyMaterial");
+
+// The ContactMaterial defines what happens when two materials meet.
+// In this case we want friction coefficient = 0.0 when the slippery material touches ground.
+var slippery_ground_cm = new CANNON.ContactMaterial(groundMaterial, slipperyMaterial, {
+    friction: 0,
+    restitution: 0.3,
+    contactEquationStiffness: 1e8,
+    contactEquationRelaxation: 3
+});
+
+// We must add the contact materials to the world
+world.addContactMaterial(slippery_ground_cm);
+
 //js
 var etoggle = -1;
 
@@ -33,6 +89,12 @@ let restraint = 0.5;
 function intorad(x) {
     return (x * (Math.PI / 180));
 };
+function reeesize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    render();
+};
 //event listeners
 document.addEventListener("click", function() {
     document.body.requestPointerLock();
@@ -45,109 +107,11 @@ document.addEventListener("mousemove", cameramove);
 document.addEventListener("keydown", keyinput);
 document.addEventListener("keyup", keyupinput);
 
-//movement
-let speed1;
-//cannon
-const world = new CANNON.World();
-world.gravity.set(0, -9.82, 0);
-var groundMaterial = new CANNON.Material("groundMaterial");
-
-// Adjust constraint equation parameters for ground/ground contact
-var ground_ground_cm = new CANNON.ContactMaterial(groundMaterial, groundMaterial, {
-    friction: 0.4,
-    restitution: 0.3,
-    contactEquationStiffness: 1e8,
-    contactEquationRelaxation: 3,
-    frictionEquationStiffness: 1e8,
-    frictionEquationRegularizationTime: 3,
-});
-
-// Add contact material to the world
-world.addContactMaterial(ground_ground_cm);
-// Create a slippery material (friction coefficient = 0.0)
-var slipperyMaterial = new CANNON.Material("slipperyMaterial");
-
-// The ContactMaterial defines what happens when two materials meet.
-// In this case we want friction coefficient = 0.0 when the slippery material touches ground.
-var slippery_ground_cm = new CANNON.ContactMaterial(groundMaterial, slipperyMaterial, {
-    friction: 0,
-    restitution: 0.3,
-    contactEquationStiffness: 1e8,
-    contactEquationRelaxation: 3
-});
-
-// We must add the contact materials to the world
-world.addContactMaterial(slippery_ground_cm);
-//plane
-const planeShape = new CANNON.Box(v3(500, 0.5, 500));
-const planeBody = new CANNON.Body({
-    mass: 0,
-    material: groundMaterial,
-    collisionFilterGroup: 2,
-    collisionFilterMask: -1
-});
-planeBody.addShape(planeShape);
-planeBody.position.set(0, floorheight, 0);
-world.addBody(planeBody);
-//three
-const clock = new THREE.Clock();
-let delta;
-
-const WIDTH = window.innerWidth;
-const HEIGHT = window.innerHeight;
-
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
-renderer.setSize(WIDTH, HEIGHT);
-renderer.setClearColor(0x000000, 1);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-document.getElementById("renderdiv").appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-//cam
-const camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 10000);
-scene.add(camera);
-camera.position.set(0, 0, 20);
-//box
-const boxGeometry = new THREE.BoxGeometry(10, 10, 10);
-const basicMaterial = new THREE.MeshStandardMaterial({
-    color: 0x0095dd
-});
-const cube = new THREE.Mesh(boxGeometry, basicMaterial);
-cube.receiveShadow = true;
-cube.castShadow = true;
-scene.add(cube);
-
-function reeesize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    render();
-};
-
 window.addEventListener('resize', reeesize, false);
-//plane
-const plane = new THREE.BoxGeometry(1000, 1, 1000);
-const planemat = new THREE.MeshStandardMaterial({
-    color: 0xffffff
-});
-const planee = new THREE.Mesh(plane, planemat);
-planee.receiveShadow = true;
-scene.add(planee);
-planee.position.set(0, planeBody.position.y, 0);
 
-//lights
-const light = new THREE.PointLight(0xffffff, 1500);
-light.position.set(0, 15, 0);
-light.castShadow = true;
-scene.add(light);
-
-const amb = new THREE.AmbientLight(0x404040, 5);
-scene.add(amb);
 
 //player
+let speed1
 const playershape = new CANNON.Cylinder(6, 6, 14, 24);
 const playerbody = new CANNON.Body({
     mass: 5,
@@ -176,7 +140,7 @@ rollbody.position.set(0, 10, 30);
 rollbody.angularDamping = restraint;
 world.addBody(rollbody);
 
-//materials
+//basic materials
 let modelloaded = [];
 const orangemat = new THREE.MeshPhysicalMaterial({
     color: 0xff4f00
@@ -204,11 +168,10 @@ const redmatshiny = new THREE.MeshPhysicalMaterial({
 });
 
 let terrainlist = [];
-//main objects
+//object hitboxes (hitbox creator)
 function monkeybox(){let box1302571 = new CANNON.Body({mass: 50, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape645426 = new CANNON.Sphere(1.875); box1302571.addShape(shape645426, v3(0,1.4500000000000006,-0.65), q4(0,0,0,1)); const shape6531925 = new CANNON.Box(v3(1.5,2.5,1)); box1302571.addShape(shape6531925, v3(0,-2.25,2.6499999999999986), q4(-6.938893903907228e-18,0,0,1)); const shape3674056 = new CANNON.Box(v3(1.75,1.375,0.5)); box1302571.addShape(shape3674056, v3(-4.799999999999991,0.8500000000000001,-1.9000000000000088), q4(0.03031364357631054,-0.17144890372772567,-0.17144890372772567,0.9696863564236894)); const shape2946292 = new CANNON.Box(v3(1.75,1.5,0.5)); box1302571.addShape(shape2946292, v3(5.349999999999989,0.8500000000000004,-2.000000000000001), q4(0.01983383807620987,0.19767681165408385,0.09784339500725571,0.975170327201816)); const shape3511336 = new CANNON.Box(v3(3,2.5,2)); box1302571.addShape(shape3511336, v3(0,1.2500000000000004,1.8500000000000008), q4(0,0,0,1)); world.addBody(box1302571); return box1302571;}
 function enemy1box(){let box469612 = new CANNON.Body({mass: 5, collisionFilterGroup: 1, collisionFilterMask: -1}); const shape2867977 = new CANNON.Cylinder(3.5,0.5,5,16); box469612.addShape(shape2867977, v3(0,0,0), q4(0,0,0,1)); world.addBody(box469612); return box469612;}
-
-//obj loader
+//model loader
 const loader = new THREE.OBJLoader();
 /*because I am working on a file:// url and cannot use a webserver, I have to encode the object file as a base 64 url 
   and then decode it or CORS will stop me from loading it. Also I have to use three.js v1.60.1 and plugins ~v1.47.0 because
@@ -244,20 +207,8 @@ function addObject(object, hitbox, amount, positions) {
     }
 }
 
-for (let h = 0; h < 20; h++) {
-    addObject(monkey_obj, monkeybox, 1, [
-        [Math.random() * 200, 20, Math.random() * 200],
-        [Math.random() * 200, 20, Math.random() * 200]
-    ]);
-}
-
 //levels/terrain
-//misc terrain objects
-
-//basic test level
-let box8869008 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFilterMask: 1 | 4 | 8}); const shape5319197 = new CANNON.Box(v3(5,10,5)); box8869008.addShape(shape5319197, v3(0,-21.900000000000176,0), q4(0,0,0.6051864057360398,0.7960837985490556)); let threeshape2663204 = new THREE.BoxGeometry(10,20,10); let threebox9082840 = new THREE.Mesh(threeshape2663204, redmat); scene.add(threebox9082840); threebox9082840.quaternion.x = 0; threebox9082840.quaternion.y = 0; threebox9082840.quaternion.z = 0.6051864057360398; threebox9082840.quaternion.w = 0.7960837985490556; threebox9082840.quaternion.normalize(); threebox9082840.position.x = 0; threebox9082840.position.y = -21.900000000000176; threebox9082840.position.z = 0; world.addBody(box8869008);
-
-/*guide on groups and masks
+/*guide on groups and masks (irrelevant due to level editor but here for future reference)
   all groups have to be the next exponent of 2 (2^2, 2^3, etc.)
   group 1 is for objects that can be picked up/general physics objects. Only able to be jumped on if touching an object in group 2
   group 2 is for terrain objects, so things like ramps, the ground, etc. remember though if a player is touching group 2, they will always be able to jump on it
@@ -265,10 +216,77 @@ let box8869008 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFil
   group 8 is for the player ball, and it was how I solved going up hills and fall speed
   group 16 is for enemys
 */
-//ramp 1
 
+//original test level
+let cubeBody
+let ramp1a2
+let ramp1b2
+let sphere1a2
+let sphere1b2
+let cube
+let planeBody
+let boxGeometry
+let planee
+function testlevel() {
+world.gravity.set(0, -9.82, 0);
+//terain
+//level editor new
+//level editor old (terrain creator)
+let box8869008 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFilterMask: 1 | 4 | 8}); const shape5319197 = new CANNON.Box(v3(5,10,5)); box8869008.addShape(shape5319197, v3(0,-21.900000000000176,0), q4(0,0,0.6051864057360398,0.7960837985490556)); let threeshape2663204 = new THREE.BoxGeometry(10,20,10); let threebox9082840 = new THREE.Mesh(threeshape2663204, redmat); scene.add(threebox9082840); threebox9082840.quaternion.x = 0; threebox9082840.quaternion.y = 0; threebox9082840.quaternion.z = 0.6051864057360398; threebox9082840.quaternion.w = 0.7960837985490556; threebox9082840.quaternion.normalize(); threebox9082840.position.x = 0; threebox9082840.position.y = -21.900000000000176; threebox9082840.position.z = 0; world.addBody(box8869008);
+//old objects and terrain (not level editor created objects)
+//original model adding test
+for (let h = 0; h < 20; h++) {
+    addObject(monkey_obj, monkeybox, 1, [
+        [Math.random() * 200, 20, Math.random() * 200],
+        [Math.random() * 200, 20, Math.random() * 200]
+    ]);
+}
+
+//plane
+const planeShape = new CANNON.Box(v3(500, 0.5, 500));
+planeBody = new CANNON.Body({
+    mass: 0,
+    material: groundMaterial,
+    collisionFilterGroup: 2,
+    collisionFilterMask: -1
+});
+planeBody.addShape(planeShape);
+planeBody.position.set(0, floorheight, 0);
+world.addBody(planeBody);
+
+//box
+boxGeometry = new THREE.BoxGeometry(10, 10, 10);
+const basicMaterial = new THREE.MeshStandardMaterial({
+    color: 0x0095dd
+});
+cube = new THREE.Mesh(boxGeometry, basicMaterial);
+cube.receiveShadow = true;
+cube.castShadow = true;
+scene.add(cube);
+
+//plane
+const plane = new THREE.BoxGeometry(1000, 1, 1000);
+const planemat = new THREE.MeshStandardMaterial({
+    color: 0xffffff
+});
+planee = new THREE.Mesh(plane, planemat);
+planee.receiveShadow = true;
+scene.add(planee);
+planee.position.set(0, planeBody.position.y, 0);
+
+//lights
+const light = new THREE.PointLight(0xffffff, 1500);
+light.position.set(0, 15, 0);
+light.castShadow = true;
+scene.add(light);
+
+const amb = new THREE.AmbientLight(0x404040, 5);
+scene.add(amb);
+
+
+//ramp 1
 const ramp1a = new CANNON.Box(v3(25, 5, 25));
-const ramp1a2 = new CANNON.Body({
+ramp1a2 = new CANNON.Body({
     mass: 0,
     collisionFilterGroup: 2,
     collisionFilterMask: 1 | 4 | 8
@@ -280,7 +298,7 @@ ramp1a2.quaternion.normalize();
 world.addBody(ramp1a2);
 
 const ramp1b = new THREE.BoxGeometry(50, 10, 50);
-const ramp1b2 = new THREE.Mesh(ramp1b, orangemat);
+ramp1b2 = new THREE.Mesh(ramp1b, orangemat);
 ramp1b2.position.set(ramp1a2.position.x, ramp1a2.position.y, ramp1a2.position.z, ramp1a2.position.w);
 ramp1b2.quaternion.set(ramp1a2.quaternion.x, ramp1a2.quaternion.y, ramp1a2.quaternion.z, ramp1a2.quaternion.w);
 ramp1b2.castShadow = true;
@@ -289,7 +307,7 @@ scene.add(ramp1b2);
 
 //sphere 1
 const sphere1a = new CANNON.Sphere(5);
-const sphere1a2 = new CANNON.Body({
+sphere1a2 = new CANNON.Body({
     mass: 15,
     collisionFilterGroup: 1,
     collisionFilterMask: -1
@@ -300,54 +318,27 @@ sphere1a2.position.set(20, 0, 20);
 world.addBody(sphere1a2);
 
 const sphere1b = new THREE.SphereGeometry(5, 36, 16);
-const sphere1b2 = new THREE.Mesh(sphere1b, purplematshiny);
+sphere1b2 = new THREE.Mesh(sphere1b, purplematshiny);
 sphere1b2.castShadow = true;
 sphere1b2.recieveShadow = true;
 scene.add(sphere1b2);
 //cube 1
 const cubeShape = new CANNON.Box(v3(5, 5, 5));
-const cubeBody = new CANNON.Body({
+cubeBody = new CANNON.Body({
     mass: 10,
     collisionFilterGroup: 1,
     collisionFilterMask: -1
 });
 cubeBody.nameg = "Test Cube";
-const sphere2a = new CANNON.Sphere(5);
 cubeBody.addShape(cubeShape)
 
 cubeBody.position.set(0, -10, 30);
 world.addBody(cubeBody);
-
-function poscopy(a, b) {
-    a.position.copy(b.position);
-    a.quaternion.copy(b.quaternion);
-}
-
-function positionsetter() {
-    poscopy(sphere1b2, sphere1a2);
-    camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
-    poscopy(cube, cubeBody);
-    //models
-    for (var i = 0; i < objlist.length; i++) {
-        if (scene.getObjectByName('obj' + i)) {
-            poscopy(objlist[i], objlistc[i]);
-        }
-    }
-    for (var i = 0; i < enemylist.length; i++) {
-        if (scene.getObjectByName('obj' + i)) {
-            enemylist[i][1].position.copy(enemylist[i][0].position);
-            if (enemylist[i][2]) {
-                enemylist[i][1].position.x += enemylist[i][2][0];
-                enemylist[i][1].position.y += enemylist[i][2][1];
-                enemylist[i][1].position.z += enemylist[i][2][2];
-            }
-            track(i);
-        }
-    }
+//end of test level
 }
 
 //movement and interactions
-//key presses
+//input handling
 var keystatus = [0, "w", 0, "a", 0, "s", 0, "d", 0, " ", 0, "y", 0, "e", 0, "v", 0, "Shift"];
 
 function keyinput(e) {
@@ -479,7 +470,7 @@ function mover() {
     playerbody.position.y = rollbody.position.y + 8;
 }
 
-//enemys
+//enemy/weapons
 var enemylist = [];
 function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; box1756912.maxdist = 100; enemylist[enemylist.length] = [box1756912]; let enemy2head = new THREE.BoxGeometry(10, 6, 10); let enemy1head2 = new THREE.Mesh(enemy2head, orangematshiny); scene.add(enemy1head2); enemy1head2.name = 'obj' + enemylist.length; enemylist[enemylist.length - 1][1] = enemy1head2; enemylist[enemylist.length - 1][2] = [0, 10, 0]; enemylist[enemylist.length - 1][1].damage = 10; return box1756912;}
 addObject(enemy1base_obj, enemy1base, 1, [[10, 50, 0]]);
@@ -541,8 +532,36 @@ function track(i) {
         }
     }
 }
+//model/hitbox synchronizing
+function poscopy(a, b) {
+    a.position.copy(b.position);
+    a.quaternion.copy(b.quaternion);
+}
 
-
+function positionsetter() {
+    poscopy(sphere1b2, sphere1a2);
+    camera.position.set(playerbody.position.x, playerbody.position.y, playerbody.position.z);
+    poscopy(cube, cubeBody);
+    //models
+    for (var i = 0; i < objlist.length; i++) {
+        if (scene.getObjectByName('obj' + i)) {
+            poscopy(objlist[i], objlistc[i]);
+        }
+    }
+    for (var i = 0; i < enemylist.length; i++) {
+        if (scene.getObjectByName('obj' + i)) {
+            enemylist[i][1].position.copy(enemylist[i][0].position);
+            if (enemylist[i][2]) {
+                enemylist[i][1].position.x += enemylist[i][2][0];
+                enemylist[i][1].position.y += enemylist[i][2][1];
+                enemylist[i][1].position.z += enemylist[i][2][2];
+            }
+            track(i);
+        }
+    }
+}
+//load level (testing purposes)
+testlevel()
 //render
 function render() {
     positionsetter();
