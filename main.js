@@ -148,7 +148,7 @@ const amb = new THREE.AmbientLight(0x404040, 5);
 scene.add(amb);
 
 //player
-const playershape = new CANNON.Cylinder(6, 6, 10, 24);
+const playershape = new CANNON.Cylinder(6, 6, 14, 24);
 const playerbody = new CANNON.Body({
     mass: 5,
     material: groundMaterial,
@@ -251,6 +251,12 @@ for (let h = 0; h < 20; h++) {
     ]);
 }
 
+//levels/terrain
+//misc terrain objects
+
+//basic test level
+let box8869008 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFilterMask: 1 | 4 | 8}); const shape5319197 = new CANNON.Box(v3(5,10,5)); box8869008.addShape(shape5319197, v3(0,-21.900000000000176,0), q4(0,0,0.6051864057360398,0.7960837985490556)); let threeshape2663204 = new THREE.BoxGeometry(10,20,10); let threebox9082840 = new THREE.Mesh(threeshape2663204, redmat); scene.add(threebox9082840); threebox9082840.quaternion.x = 0; threebox9082840.quaternion.y = 0; threebox9082840.quaternion.z = 0.6051864057360398; threebox9082840.quaternion.w = 0.7960837985490556; threebox9082840.quaternion.normalize(); threebox9082840.position.x = 0; threebox9082840.position.y = -21.900000000000176; threebox9082840.position.z = 0; world.addBody(box8869008);
+
 /*guide on groups and masks
   all groups have to be the next exponent of 2 (2^2, 2^3, etc.)
   group 1 is for objects that can be picked up/general physics objects. Only able to be jumped on if touching an object in group 2
@@ -280,8 +286,6 @@ ramp1b2.quaternion.set(ramp1a2.quaternion.x, ramp1a2.quaternion.y, ramp1a2.quate
 ramp1b2.castShadow = true;
 ramp1b2.recieveShadow = true;
 scene.add(ramp1b2);
-
-let box8869008 = new CANNON.Body({mass: 0, collisionFilterGroup: 2, collisionFilterMask: 1 | 4 | 8}); const shape5319197 = new CANNON.Box(v3(5,10,5)); box8869008.addShape(shape5319197, v3(0,-21.900000000000176,0), q4(0,0,0.6051864057360398,0.7960837985490556)); let threeshape2663204 = new THREE.BoxGeometry(10,20,10); let threebox9082840 = new THREE.Mesh(threeshape2663204, redmat); scene.add(threebox9082840); threebox9082840.quaternion.x = 0; threebox9082840.quaternion.y = 0; threebox9082840.quaternion.z = 0.6051864057360398; threebox9082840.quaternion.w = 0.7960837985490556; threebox9082840.quaternion.normalize(); threebox9082840.position.x = 0; threebox9082840.position.y = -21.900000000000176; threebox9082840.position.z = 0; world.addBody(box8869008);
 
 //sphere 1
 const sphere1a = new CANNON.Sphere(5);
@@ -420,31 +424,31 @@ function mover() {
     camdir.z *= speed1;
     if (keystatus[0] == 1) {
         if (noclip == 1) {
-            rollbody.velocity.x += camdir.x;
-            rollbody.velocity.z += camdir.z;
+            playerbody.velocity.x += camdir.x;
+            playerbody.velocity.z += camdir.z;
             rollbody.velocity.y += camdir.z;
         } else {
-            rollbody.velocity.x += camdir.x;
-            rollbody.velocity.z += camdir.z;
+            playerbody.velocity.x += camdir.x;
+            playerbody.velocity.z += camdir.z;
         }
     }
     if (keystatus[2] == 1) {
-        rollbody.velocity.x += camdir.z;
-        rollbody.velocity.z += camdir.x * -1;
+        playerbody.velocity.x += camdir.z;
+        playerbody.velocity.z += camdir.x * -1;
     };
     if (keystatus[4] == 1) {
         if (noclip == 1) {
-            rollbody.velocity.x -= camdir.x;
-            rollbody.velocity.z -= camdir.z;
+            playerbody.velocity.x -= camdir.x;
+            playerbody.velocity.z -= camdir.z;
             rollbody.velocity.y -= camdir.z;
         } else {
-            rollbody.velocity.x -= camdir.x;
-            rollbody.velocity.z -= camdir.z;
+            playerbody.velocity.x -= camdir.x;
+            playerbody.velocity.z -= camdir.z;
         }
     }
     if (keystatus[6] == 1) {
-        rollbody.velocity.x += camdir.z * -1;
-        rollbody.velocity.z += camdir.x;
+        playerbody.velocity.x += camdir.z * -1;
+        playerbody.velocity.z += camdir.x;
     };
     if (keystatus[8] == 1) {
         if (bodiesAreInContact(rollbody, 2, 0) === true) {
@@ -467,12 +471,12 @@ function mover() {
             rollbody.velocity.y = Math.max(-22, rollbody.velocity.y - 0.5);
         }
     }
-    rollbody.velocity.x /= 1.075;
-    rollbody.velocity.z /= 1.075;
+    playerbody.velocity.x /= 1.075;
+    playerbody.velocity.z /= 1.075;
     pickup(etoggle);
-    playerbody.position.x = rollbody.position.x;
-    playerbody.position.z = rollbody.position.z;
-    playerbody.position.y = rollbody.position.y + 10;
+    rollbody.position.x = playerbody.position.x;
+    rollbody.position.z = playerbody.position.z;
+    playerbody.position.y = rollbody.position.y + 8;
 }
 
 //enemys
@@ -531,7 +535,7 @@ function track(i) {
     if (gdistance(enemylist[i][1], enemylist[i][0].maxdist) == true && enemylist[i][1].parent == scene) {
         poscopy(target1, enemylist[i][1]);
         target1.lookAt(camera.position);
-        enemylist[i][1].quaternion.slerp(target1.quaternion, 0.1);
+        enemylist[i][1].quaternion.slerp(target1.quaternion, 0.075);
         if (!(enemylist[i][3]) || enemylist[i][3] == 0) {
             enemyshoot(enemylist[i][1], i);
         }
