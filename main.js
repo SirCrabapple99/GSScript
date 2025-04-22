@@ -1,3 +1,11 @@
+/*implementation plans:
+  change shooting from raycast to visible/dodgeable projectiles
+  more enemys (goes with level editor)
+  more objects (goes with level editor)
+  (at some point) fix jumping
+  EVENTUALLY this file will be fully redone, with every function given a better name and rearranged into a much cleaner file, with notes on every function so I can remember what they are in the future.
+  may happen for the level editor, definitely not the hitbox creator though as that is pretty much finished and won't be edited much later anyways
+*/
 //three init
 const WIDTH = window.innerWidth;
 const HEIGHT = window.innerHeight;
@@ -65,12 +73,12 @@ function q4(x, y, z, w) {
     return (new CANNON.Quaternion(x, y, z, w));
 };
 
-function ts(x) {
-    return JSON.stringify(x);
-}
-
-function fs(x) {
-    return JSON.parse(x);
+function nameTab(tabname, type) {
+    if (!type) {
+    document.getElementById("title").innerHTML = `GScript (${tabname})`;
+    return
+    }
+    document.getElementById("title").innerHTML = tabname;
 }
 //settings
 //base plane height
@@ -216,8 +224,9 @@ function addObject(object, hitbox, amount, positions) {
   group 8 is for the player ball, and it was how I solved going up hills and fall speed
   group 16 is for enemys
 */
+//important/relevant variables
 
-//original test level
+//original testing level
 let cubeBody
 let ramp1a2
 let ramp1b2
@@ -228,6 +237,7 @@ let planeBody
 let boxGeometry
 let planee
 function testlevel() {
+nameTab("testing level")
 world.gravity.set(0, -9.82, 0);
 //terain
 //level editor new

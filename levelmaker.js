@@ -1,4 +1,11 @@
-var istool = 1;
+/*implementation plans:
+  physics objects
+  enemys
+  hitbox enabler/disabler
+  post creation property editing
+  advanced property editing
+  more advanced gui
+*/
 //base things
 //cannon
 const world = new CANNON.World();
@@ -329,10 +336,10 @@ function addbox() {
         let pos3 = new THREE.Vector3(posprompt3[0], posprompt3[1], posprompt3[2]);
         newhitbox(new THREE.CylinderGeometry(cylinderprompt[0], cylinderprompt[1], cylinderprompt[2], cylinderprompt[3]), pos3, [cylinderprompt[0], cylinderprompt[1], cylinderprompt[2], cylinderprompt[3]]);
     } else if ((new RegExp(/enemy/i)).test(boxtype)) {
-        let nameprompt = JSON.parse('[' + window.prompt("hitbox model, hitbox function name") + ']');
+        let enemyprompt = '[' + window.prompt("hitbox model, hitbox function name") + ']';
         let posprompt4 = JSON.parse('[' + window.prompt("position: x, y, z") + ']');
         let pos4 = new THREE.Vector3(posprompt4[0], posprompt4[1], posprompt4[2]);
-        newenemy(nameprompt[0], nameprompt[1], pos4);
+        newenemy(JSON.parse(enemyprompt)[0], JSON.parse(enemyprompt)[1], pos4);
     } else {
         alert("not a valid hitbox type");
         return;
@@ -360,9 +367,12 @@ function newhitbox(shape1, position, size) {
     exportvalues[exportvalues.length] = size;
 }
 
+function enemy1base(){let box1756912 = new CANNON.Body({mass: 10, collisionFilterGroup: 16, collisionFilterMask: -1}); const shape7993561 = new CANNON.Box(v3(3.5,2.5,3.5)); box1756912.addShape(shape7993561, v3(0,-1.6000000000000005,0), q4(0,0,0,1)); const shape7072548 = new CANNON.Box(v3(5,3,5)); box1756912.addShape(shape7072548, v3(0,2.9999999999999973,0), q4(0,0,0,1)); world.addBody(box1756912); box1756912.health = 100; box1756912.maxdist = 100; enemylist[enemylist.length] = [box1756912]; let enemy2head = new THREE.BoxGeometry(10, 6, 10); let enemy1head2 = new THREE.Mesh(enemy2head, orangematshiny); scene.add(enemy1head2); enemy1head2.name = 'obj' + enemylist.length; enemylist[enemylist.length - 1][1] = enemy1head2; enemylist[enemylist.length - 1][2] = [0, 10, 0]; enemylist[enemylist.length - 1][1].damage = 10; return box1756912;}
+addObject(enemy1base_obj, enemy1base, 1, [[0, 0, 0], [0, 0, 10]]);
+
 function newenemy(hitbox_obj, hitbox, pos) {
     addObject(hitbox_obj, hitbox, 1, pos);
-    cannondata[cannondata.length] = ['addObject('+hitbox_obj, hitbox+', 1, ['+pos+']); ']
+    cannondata[cannondata.length] = ['addObject('+hitbox_obj, hitbox+', 1, [['+pos+']]); ']
 }
 
 //final output creation
@@ -376,15 +386,15 @@ function newcannon(box, position, size, boxname) {
         const three1 = 'threebox' + Math.round(Math.random() * 10000000);
         cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Box(v3(' + size[0] / 2, size[1] / 2, size[2] / 2 + ')); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); let '+three2+' = new THREE.BoxGeometry('+size[0], size[1], size[2]+'); let '+three1+' = new THREE.Mesh('+three2+', redmat); scene.add('+three1+'); '+three1+'.quaternion.x = '+box.quaternion.x+'; '+three1+'.quaternion.y = '+box.quaternion.y+'; '+three1+'.quaternion.z = '+box.quaternion.z+'; '+three1+'.quaternion.w = '+box.quaternion.w+'; '+three1+'.quaternion.normalize(); '+three1+'.position.x = '+box.position.x+'; '+three1+'.position.y = '+box.position.y+'; '+three1+'.position.z = '+box.position.z+'; '];
     } else if (box.geometry.constructor == THREE.SphereGeometry) {
-        const three2 = 'threeshape' + Math.round(Math.random() * 10000000);
-        const three1 = 'threebox' + Math.round(Math.random() * 10000000);
-        const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
-        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Sphere(' + size[0] + '); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); let '+three2+' = new THREE.SphereGeometry('+size[0], size[1], size[2]+'); let '+three1+' = new THREE.Mesh('+three2+', redmat); scene.add('+three1+'); '+three1+'.quaternion.x = '+box.quaternion.x+'; '+three1+'.quaternion.y = '+box.quaternion.y+'; '+three1+'.quaternion.z = '+box.quaternion.z+'; '+three1+'.quaternion.w = '+box.quaternion.w+'; '+three1+'.quaternion.normalize(); '+three1+'.position.x = '+box.position.x+'; '+three1+'.position.y = '+box.position.y+'; '+three1+'.position.z = '+box.position.z+'; '];
+        const three3 = 'threeshape' + Math.round(Math.random() * 10000000);
+        const three4 = 'threebox' + Math.round(Math.random() * 10000000);
+        const tempbox3 = 'shape' + Math.round(Math.random() * 10000000);
+        cannondata[cannondata.length] = ['const ' + tempbox3 + ' = new CANNON.Sphere(' + size[0] + '); ' + tempbox + '.addShape(' + tempbox3 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); let '+three4+' = new THREE.SphereGeometry('+size[0], size[1], size[2]+'); let '+three3+' = new THREE.Mesh('+three4+', redmat); scene.add('+three3+'); '+three3+'.quaternion.x = '+box.quaternion.x+'; '+three3+'.quaternion.y = '+box.quaternion.y+'; '+three3+'.quaternion.z = '+box.quaternion.z+'; '+three3+'.quaternion.w = '+box.quaternion.w+'; '+three3+'.quaternion.normalize(); '+three3+'.position.x = '+box.position.x+'; '+three3+'.position.y = '+box.position.y+'; '+three3+'.position.z = '+box.position.z+'; '];
     } else if (box.geometry.constructor == THREE.CylinderGeometry) {
-        const three2 = 'threeshape' + Math.round(Math.random() * 10000000);
-        const three1 = 'threebox' + Math.round(Math.random() * 10000000);
-        const tempbox2 = 'shape' + Math.round(Math.random() * 10000000);
-        cannondata[cannondata.length] = ['const ' + tempbox2 + ' = new CANNON.Cylinder(' + size[0] / 2, size[1] / 2, size[2] / 2, size[3] + '); ' + tempbox + '.addShape(' + tempbox2 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
+        const three5 = 'threeshape' + Math.round(Math.random() * 10000000);
+        const three6 = 'threebox' + Math.round(Math.random() * 10000000);
+        const tempbox4 = 'shape' + Math.round(Math.random() * 10000000);
+        cannondata[cannondata.length] = ['const ' + tempbox4 + ' = new CANNON.Cylinder(' + size[0] / 2, size[1] / 2, size[2] / 2, size[3] + '); ' + tempbox + '.addShape(' + tempbox4 + ', v3('+box.position.x, box.position.y, box.position.z+'), q4('+box.quaternion.x, box.quaternion.y, box.quaternion.z, box.quaternion.w+')); '];
     } else {
         alert("fail");
     }
