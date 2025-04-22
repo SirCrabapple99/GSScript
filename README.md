@@ -1,4 +1,5 @@
-# this whole thing can't use es imports or anything of the sort because of CORS restrictions. Because of this, it uses the original cannon, three js version 1.60.1, and the latest three js plugin version available (usually 1.47.0). all model files need to be turned into js files and then the obj data needs to be turned into a variable using ` or it can't be loaded
+# explanation
+this whole thing can't use es imports or anything of the sort because of CORS restrictions. Because of this, it uses the original cannon, three js version 1.60.1, and the latest three js plugin version available (usually 1.47.0). all model files need to be turned into js files and then the obj data needs to be turned into a variable using ` or it can't be loaded
 
 ## [normal link](https://sircrabapple99.github.io/three)
 controls: click to lock mouse, move mouse to move camera, wasd and space to move player, e to pick things up.
