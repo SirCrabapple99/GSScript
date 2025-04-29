@@ -1,0 +1,59 @@
+/* base */
+html,
+body,
+canvas {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 0;
+  }
+/* ui */
+#ui {
+    position: fixed; /* Sit on top of the page content */
+    display: inline-block; /* Hidden by default */
+    width: 100%; /* Full width (cover the whole page) */
+    height: 100%; /* Full height (cover the whole page) */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  }
+#cursor{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 10px;
+    color: white;
+    transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    width: 10px;
+    height: 10px;
+  }
+/* dropdowns */
+.shapesdown {
+    transform: translate(0vh, 0vh);
+  }
+.shapesdown1 {
+    display: block;
+    transform: translate(0vh, 16vh);
+  }
+.shapes {
+    border: none;
+    transition: all 1s;
+    z-index: 1000;
+  }
+.nbox {
+    display: inline-block;
+    transform: translate(0vh, 3vh);
+    z-index: -1;
+    border: none;
+    transition: all 1s;
+}
+/* fonts */
+.ubuntu-light {
+    font-family: "Ubuntu", sans-serif;
+    font-weight: 300;
+    font-style: normal;
+  }
